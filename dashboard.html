@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LP Compras – Dashboards</title>
+
+    <!-- Bibliotecas CDN -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --border: #d0d5dd;
+            --text: #1d1d1f;
+            --text-secondary: #5f6368;
+            --accent-green: #0d904f;
+            --accent-orange: #e8710a;
+            --accent-purple: #7620a0;
+            --accent-teal: #007b83;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10), 0 2px 4px rgba(0, 0, 0, 0.06);
+            --radius: 10px;
+            --radius-sm: 6px;
+            --transition: 0.2s ease;
+            --navy: #0a1929;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ==================== CABEÇALHO ==================== */
+        .app-header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .app-header .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .app-header .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .app-header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .app-header .badge {
+            font-size: 0.7rem;
+            background: #e8f0fe;
+            color: var(--primary);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .tab-nav {
+            display: flex;
+            background: var(--card-bg);
+            border-bottom: 2px solid var(--border);
+            padding: 0 28px;
+            position: sticky;
+            top: 64px;
+            z-index: 99;
+            box-shadow: var(--shadow);
+        }
+        .tab-btn {
+            padding: 12px 22px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .tab-btn:hover {
+            color: var(--text);
+            background: #f8f9fa;
+            border-radius: 6px 6px 0 0;
+        }
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px 28px;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 18px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .panel-header {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 14px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-header .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        .upload-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .upload-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        .upload-label:hover { background: var(--primary-dark); }
+        .upload-label svg { width: 16px; height: 16px; }
+        #file-info { font-size: 0.82rem; color: var(--text-secondary); font-weight: 500; }
+        #file-info.success { color: var(--accent-green); }
+        #file-info.error { color: #c62828; }
+        input[type="file"] { display: none; }
+
+        .filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 130px;
+            flex: 1;
+            max-width: 200px;
+        }
+        .filter-group label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text-secondary);
+        }
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 10px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            background: #fafbfc;
+            color: var(--text);
+            font-family: inherit;
+        }
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+            background: #fff;
+        }
+        .interval-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text);
+            margin-bottom: 1px;
+        }
+        .interval-checkbox input { width: 15px; height: 15px; accent-color: var(--primary); }
+        .hidden { display: none !important; }
+        .btn-reset {
+            padding: 8px 14px;
+            background: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            align-self: flex-end;
+            margin-bottom: 1px;
+        }
+        .btn-reset:hover { background: #f5f5f5; border-color: #999; color: var(--text); }
+
+        .indicators-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+        .indicator-card {
+            flex: 1;
+            min-width: 180px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+        }
+        .indicator-card:nth-child(1) { border-left-color: var(--primary); }
+        .indicator-card:nth-child(2) { border-left-color: var(--accent-green); }
+        .indicator-card:nth-child(3) { border-left-color: var(--accent-orange); }
+        .indicator-card:nth-child(4) { border-left-color: var(--accent-purple); }
+        .indicator-card .ind-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .indicator-card .ind-value { font-size: 1.5rem; font-weight: 700; color: var(--text); }
+
+        .charts-row {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+        .chart-container {
+            flex: 1;
+            min-width: 400px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .chart-container.full-width {
+            flex: 1 1 100%;
+            min-width: 100%;
+        }
+        .chart-container.full-width canvas {
+            max-height: 550px;
+        }
+        .chart-container h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        .chart-container canvas { max-height: 400px; }
+        .no-data {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: #aaa;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 8px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .fornecedores-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+        .fornecedores-table th {
+            background: #f8f9fa;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            padding: 10px 12px;
+            border-bottom: 2px solid var(--border);
+            text-align: left;
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            z-index: 1;
+        }
+        .fornecedores-table td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        .fornecedores-table tbody tr:hover { background: #f0f4ff; }
+        .fornecedores-table .valor-cell { font-weight: 600; text-align: right; }
+        .fornecedores-table .percent-cell { font-weight: 500; text-align: right; color: var(--accent-teal); }
+        .fornecedores-table .negrito td { font-weight: 700; }
+        .table-footer-info { font-size: 0.72rem; color: var(--text-secondary); margin-top: 6px; }
+
+        /* Cards de Variação */
+        .cards-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: flex-start;
+        }
+        .comprador-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            min-width: 220px;
+            flex: 1 1 220px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+            cursor: default;
+        }
+        .comprador-card:hover { box-shadow: var(--shadow-md); }
+        .comprador-card .card-nome {
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .comprador-card .card-valor,
+        .comprador-card .card-qtd {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .comprador-card .card-variacao {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+        .comprador-card .card-variacao.verde { color: var(--accent-green); }
+        .comprador-card .card-variacao.vermelho { color: #c62828; }
+        .comprador-card .card-variacao.cinza { color: #6c757d; }
+        .comment-icon {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 1rem;
+            color: #888;
+            cursor: help;
+        }
+        .card-tooltip {
+            display: none;
+            position: absolute;
+            background: #333;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            max-width: 280px;
+            width: max-content;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            line-height: 1.4;
+            text-align: center;
+        }
+        .card-tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .comprador-card:hover .card-tooltip { display: block; }
+
+        @media (max-width: 768px) {
+            .charts-row { flex-direction: column; }
+            .chart-container { min-width: auto; }
+            .chart-container.full-width { min-width: 100%; }
+            .filter-group { min-width: 100px; max-width: 150px; }
+            .indicators-row { gap: 10px; }
+            .indicator-card { min-width: 130px; padding: 14px; }
+            .indicator-card .ind-value { font-size: 1.2rem; }
+            .tab-btn { padding: 10px 14px; font-size: 0.78rem; }
+            .comprador-card { min-width: 160px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ÁREA DO APLICATIVO (sempre visível) -->
+    <div id="app-screen" style="display: block;">
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">&#128202;</div>
+                <h1>Dashboard de Compras</h1>
+            </div>
+            <span class="badge">v1.0</span>
+        </header>
+
+        <nav class="tab-nav" id="tabNav">
+            <button class="tab-btn active" data-tab="tab-dashboard-compras">Dashboard de Compras</button>
+            <button class="tab-btn" data-tab="tab-analise-comprador">Análise por Comprador</button>
+            <button class="tab-btn" data-tab="tab-analise-item">Análise por Item</button>
+            <button class="tab-btn" data-tab="tab-analise-fornecedor">Análise por Fornecedor</button>
+        </nav>
+
+        <!-- Aba 1: Dashboard de Compras -->
+        <div class="tab-content active" id="tab-dashboard-compras">
+            <div class="panel">
+                <div class="panel-header"><span class="dot"></span> Anexar Planilha de Dados</div>
+                <div class="upload-area">
+                    <label class="upload-label" for="fileInput" title="Formatos aceitos: .xlsx, .xls, .xlsb, .csv">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>
+                        Selecionar Arquivo
+                    </label>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsb,.csv">
+                    <span id="file-info">Nenhum arquivo selecionado</span>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-header"><span class="dot"></span> Filtros</div>
+                <div class="filters-row" id="filtersRow">
+                    <div class="filter-group"><label for="filtro-unidade">Unidade</label><select id="filtro-unidade"><option value="">Todas</option></select></div>
+                    <div class="filter-group"><label for="filtro-empresa">Empresa</label><select id="filtro-empresa"><option value="">Todas</option></select></div>
+                    <div class="filter-group"><label for="filtro-categoria">Categoria</label><select id="filtro-categoria"><option value="">Todas</option></select></div>
+                    <div class="filter-group"><label for="filtro-comprador">Comprador</label><select id="filtro-comprador"><option value="">Todos</option></select></div>
+                    <div class="filter-group" style="max-width:220px;"><label for="mes-inicio">Intervalo (Mês)</label><select id="mes-inicio"><option value="">Selecione...</option></select></div>
+                    <div class="filter-group hidden" id="mes-fim-container" style="max-width:200px;"><label for="mes-fim">Até (Mês)</label><select id="mes-fim"><option value="">Selecione...</option></select></div>
+                    <div class="filter-group" style="max-width:160px; justify-content:flex-end;">
+                        <label class="interval-checkbox"><input type="checkbox" id="chk-intervalo"><span>Selecionar intervalo</span></label>
+                    </div>
+                    <button class="btn-reset" id="btnResetFiltros" title="Limpar todos os filtros">&#8635; Limpar</button>
+                </div>
+            </div>
+            <div class="indicators-row" id="indicatorsRow">
+                <div class="indicator-card"><div class="ind-label">Total do Mês</div><div class="ind-value" id="ind-total-mes">R$ 0</div></div>
+                <div class="indicator-card"><div class="ind-label">Acumulado do Ano</div><div class="ind-value" id="ind-acumulado-ano">R$ 0</div></div>
+                <div class="indicator-card"><div class="ind-label">Total em Notas (Qtd)</div><div class="ind-value" id="ind-total-notas">0</div></div>
+                <div class="indicator-card"><div class="ind-label">Total de Fornecedores</div><div class="ind-value" id="ind-total-fornecedores">0</div></div>
+            </div>
+            <div class="charts-row">
+                <div class="chart-container"><h3>Total Acumulado do Ano</h3><canvas id="chartBar"></canvas><div class="no-data" id="noDataBar">Carregue uma planilha para visualizar os dados</div></div>
+                <div class="chart-container"><h3>Distribuição por Estado</h3><canvas id="chartPie"></canvas><div class="no-data" id="noDataPie">Carregue uma planilha para visualizar os dados</div></div>
+            </div>
+            <div class="panel">
+                <div class="panel-header"><span class="dot"></span> Ranking de Fornecedores (Valor Comprado)</div>
+                <div class="table-wrapper">
+                    <table class="fornecedores-table" id="tabelaFornecedores">
+                        <thead><tr><th>#</th><th>Fornecedor</th><th class="valor-cell">Valor Total</th><th class="valor-cell">% Percentual</th></tr></thead>
+                        <tbody id="tbodyFornecedores"></tbody>
+                    </table>
+                </div>
+                <div class="table-footer-info" id="infoFornecedores"></div>
+            </div>
+        </div>
+
+        <!-- Aba 2: Análise por Comprador -->
+        <div class="tab-content" id="tab-analise-comprador">
+            <div class="panel">
+                <div class="panel-header"><span class="dot"></span> Filtros</div>
+                <div class="filters-row" id="filtersRowComprador">
+                    <div class="filter-group"><label for="filtro-estado-setor">Estado</label><select id="filtro-estado-setor"><option value="">Todos</option></select></div>
+                    <div class="filter-group"><label for="filtro-categoria-setor">Categoria</label><select id="filtro-categoria-setor"><option value="">Todas</option></select></div>
+                    <div class="filter-group"><label for="filtro-comprador-setor">Comprador</label><select id="filtro-comprador-setor"><option value="">Todos</option></select></div>
+                    <div class="filter-group" style="max-width:220px;"><label for="mes-inicio-setor">Intervalo (Mês)</label><select id="mes-inicio-setor"><option value="">Selecione...</option></select></div>
+                    <div class="filter-group hidden" id="mes-fim-container-sec" style="max-width:200px;"><label for="mes-fim-setor">Até (Mês)</label><select id="mes-fim-setor"><option value="">Selecione...</option></select></div>
+                    <div class="filter-group" style="max-width:160px; justify-content:flex-end;">
+                        <label class="interval-checkbox"><input type="checkbox" id="chk-intervalo-setor"><span>Selecionar intervalo</span></label>
+                    </div>
+                    <button class="btn-reset" id="btnResetFiltrosSetor" title="Limpar todos os filtros">&#8635; Limpar</button>
+                </div>
+            </div>
+
+            <!-- Percentual por Categoria -->
+            <div class="charts-row">
+                <div class="chart-container full-width" id="chartCategoriaContainer">
+                    <h3>Percentual por Categoria</h3>
+                    <canvas id="chartCategoriaSetor"></canvas>
+                    <div class="no-data" id="noDataCategoriaSetor">Carregue uma planilha para visualizar os dados</div>
+                </div>
+            </div>
+
+            <!-- Variação por Comprador (com tooltip) -->
+            <div class="panel">
+                <div class="panel-header"><span class="dot"></span> Variação por Comprador</div>
+                <div class="cards-grid" id="cardsVariacaoContainer"></div>
+                <div class="no-data" id="noDataVariacaoSetor" style="height:100px;">Sem dados para o período selecionado.</div>
+            </div>
+        </div>
+
+        <!-- Aba 3: Análise por Item -->
+        <div class="tab-content" id="tab-analise-item">
+            <div class="panel">
+                <div class="panel-header"><span class="dot"></span> Filtros</div>
+                <div class="filters-row" id="filtersRowItem">
+                    <div class="filter-group"><label for="filtro-unidade-item">Unidade</label><select id="filtro-unidade-item"><option value="">Todas</option></select></div>
+                    <div class="filter-group"><label for="filtro-estado-item">Estado</label><select id="filtro-estado-item"><option value="">Todos</option></select></div>
+                    <div class="filter-group"><label for="filtro-municipio-item">Município</label><select id="filtro-municipio-item"><option value="">Todos</option></select></div>
+                    <div class="filter-group"><label for="filtro-empresa-item">Empresa</label><select id="filtro-empresa-item"><option value="">Todas</option></select></div>
+                    <div class="filter-group"><label for="filtro-segmentacao-item">Segmentação</label><select id="filtro-segmentacao-item"><option value="">Todas</option></select></div>
+                    <div class="filter-group"><label for="filtro-categoria-item">Categoria</label><select id="filtro-categoria-item"><option value="">Todas</option></select></div>
+                    <div class="filter-group"><label for="filtro-responsavel-item">Responsável</label><select id="filtro-responsavel-item"><option value="">Todos</option></select></div>
+                    <div class="filter-group"><label for="filtro-tri-item">Trimestre</label><select id="filtro-tri-item"><option value="">Todos</option></select></div>
+                    <div class="filter-group" style="max-width:220px;"><label for="mes-inicio-item">Intervalo (Mês)</label><select id="mes-inicio-item"><option value="">Selecione...</option></select></div>
+                    <div class="filter-group hidden" id="mes-fim-container-item" style="max-width:200px;"><label for="mes-fim-item">Até (Mês)</label><select id="mes-fim-item"><option value="">Selecione...</option></select></div>
+                    <div class="filter-group" style="max-width:160px; justify-content:flex-end;">
+                        <label class="interval-checkbox"><input type="checkbox" id="chk-intervalo-item"><span>Selecionar intervalo</span></label>
+                    </div>
+                    <button class="btn-reset" id="btnResetFiltrosItem" title="Limpar todos os filtros">&#8635; Limpar</button>
+                </div>
+            </div>
+
+            <!-- Gráfico Evolução Mensal Custo x Quantidade -->
+            <div class="charts-row">
+                <div class="chart-container full-width" id="chartEvolucaoContainer">
+                    <h3>Evolução Mensal Custo x Quantidade</h3>
+                    <canvas id="chartEvolucaoItem"></canvas>
+                    <div class="no-data" id="noDataEvolucao">Carregue uma planilha para visualizar os dados</div>
+                </div>
+            </div>
+
+            <!-- Tabela Curva ABC Itens -->
+            <div class="panel">
+                <div class="panel-header"><span class="dot"></span> Curva ABC Itens</div>
+                <div class="table-wrapper">
+                    <table class="fornecedores-table" id="tabelaItens">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Item Receita</th>
+                                <th class="valor-cell">Volume Total</th>
+                                <th class="valor-cell">Valor Total</th>
+                                <th class="valor-cell">Custo Médio</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyItens"></tbody>
+                    </table>
+                </div>
+                <div class="table-footer-info" id="infoItens"></div>
+            </div>
+        </div>
+
+        <!-- Aba 4: Análise por Fornecedor -->
+        <div class="tab-content" id="tab-analise-fornecedor">
+            <div class="panel">
+                <div class="panel-header"><span class="dot"></span> Filtros</div>
+                <div class="filters-row" id="filtersRowForn">
+                    <div class="filter-group"><label for="filtro-unidade-forn">Unidade</label><select id="filtro-unidade-forn"><option value="">Todas</option></select></div>
+                    <div class="filter-group"><label for="filtro-estado-forn">Estado</label><select id="filtro-estado-forn"><option value="">Todos</option></select></div>
+                    <div class="filter-group"><label for="filtro-municipio-forn">Município</label><select id="filtro-municipio-forn"><option value="">Todos</option></select></div>
+                    <div class="filter-group"><label for="filtro-empresa-forn">Empresa</label><select id="filtro-empresa-forn"><option value="">Todas</option></select></div>
+                    <div class="filter-group"><label for="filtro-segmentacao-forn">Segmentação</label><select id="filtro-segmentacao-forn"><option value="">Todas</option></select></div>
+                    <div class="filter-group"><label for="filtro-categoria-forn">Categoria</label><select id="filtro-categoria-forn"><option value="">Todas</option></select></div>
+                    <div class="filter-group"><label for="filtro-responsavel-forn">Responsável</label><select id="filtro-responsavel-forn"><option value="">Todos</option></select></div>
+                    <div class="filter-group"><label for="filtro-tri-forn">Trimestre</label><select id="filtro-tri-forn"><option value="">Todos</option></select></div>
+                    <div class="filter-group" style="max-width:220px;"><label for="mes-inicio-forn">Intervalo (Mês)</label><select id="mes-inicio-forn"><option value="">Selecione...</option></select></div>
+                    <div class="filter-group hidden" id="mes-fim-container-forn" style="max-width:200px;"><label for="mes-fim-forn">Até (Mês)</label><select id="mes-fim-forn"><option value="">Selecione...</option></select></div>
+                    <div class="filter-group" style="max-width:160px; justify-content:flex-end;">
+                        <label class="interval-checkbox"><input type="checkbox" id="chk-intervalo-forn"><span>Selecionar intervalo</span></label>
+                    </div>
+                    <button class="btn-reset" id="btnResetFiltrosForn" title="Limpar todos os filtros">&#8635; Limpar</button>
+                </div>
+            </div>
+
+            <!-- Gráfico Quantidade de Fornecedores por Estado -->
+            <div class="charts-row">
+                <div class="chart-container full-width" id="chartFornEstadoContainer">
+                    <h3>Quantidade de Fornecedores por Estado</h3>
+                    <canvas id="chartFornEstado"></canvas>
+                    <div class="no-data" id="noDataFornEstado">Carregue uma planilha para visualizar os dados</div>
+                </div>
+            </div>
+
+            <!-- Ranking de Fornecedores -->
+            <div class="panel">
+                <div class="panel-header"><span class="dot"></span> Ranking de Fornecedores (Valor Comprado)</div>
+                <div class="table-wrapper">
+                    <table class="fornecedores-table" id="tabelaFornecedoresForn">
+                        <thead><tr><th>#</th><th>Fornecedor</th><th class="valor-cell">Valor Total</th><th class="valor-cell">% Percentual</th></tr></thead>
+                        <tbody id="tbodyFornecedoresForn"></tbody>
+                    </table>
+                </div>
+                <div class="table-footer-info" id="infoFornecedoresForn"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ==================== PLUGIN DATALABELS ====================
+            if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
+
+            // ==================== VARIÁVEIS GLOBAIS ====================
+            let dadosBrutos = [];
+            let periodosUnicos = [];
+            let chartBarInst = null;
+            let chartPieInst = null;
+            let chartCategoriaSetorInst = null;
+            let chartEvolucaoInst = null;
+            let chartFornEstadoInst = null;
+
+            const MESES_NOME = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const MESES_MAP = {
+                'janeiro': 1, 'fevereiro': 2, 'março': 3, 'marco': 3, 'abril': 4,
+                'maio': 5, 'junho': 6, 'julho': 7, 'agosto': 8, 'setembro': 9,
+                'outubro': 10, 'novembro': 11, 'dezembro': 12
+            };
+            const COMPRADORES_IGNORADOS = ['S/COMPRADOR', 'ALBERICO BASTOS', 'ADRIANA ARAPIRACA'];
+
+            // ==================== ELEMENTOS DOM ====================
+            // Aba 1
+            const fileInput = document.getElementById('fileInput');
+            const fileInfo = document.getElementById('file-info');
+            const chkIntervalo = document.getElementById('chk-intervalo');
+            const mesFimContainer = document.getElementById('mes-fim-container');
+            const btnResetFiltros = document.getElementById('btnResetFiltros');
+            const selectUnidade = document.getElementById('filtro-unidade');
+            const selectEmpresa = document.getElementById('filtro-empresa');
+            const selectCategoria = document.getElementById('filtro-categoria');
+            const selectComprador = document.getElementById('filtro-comprador');
+            const selectMesInicio = document.getElementById('mes-inicio');
+            const selectMesFim = document.getElementById('mes-fim');
+            const indTotalMes = document.getElementById('ind-total-mes');
+            const indAcumuladoAno = document.getElementById('ind-acumulado-ano');
+            const indTotalNotas = document.getElementById('ind-total-notas');
+            const indTotalFornecedores = document.getElementById('ind-total-fornecedores');
+            const noDataBar = document.getElementById('noDataBar');
+            const noDataPie = document.getElementById('noDataPie');
+            const canvasBar = document.getElementById('chartBar');
+            const canvasPie = document.getElementById('chartPie');
+            const tbodyFornecedores = document.getElementById('tbodyFornecedores');
+            const infoFornecedores = document.getElementById('infoFornecedores');
+
+            // Aba 2
+            const selectEstadoSetor = document.getElementById('filtro-estado-setor');
+            const selectCategoriaSetor = document.getElementById('filtro-categoria-setor');
+            const selectCompradorSetor = document.getElementById('filtro-comprador-setor');
+            const selectMesInicioSetor = document.getElementById('mes-inicio-setor');
+            const selectMesFimSetor = document.getElementById('mes-fim-setor');
+            const chkIntervaloSetor = document.getElementById('chk-intervalo-setor');
+            const mesFimContainerSec = document.getElementById('mes-fim-container-sec');
+            const btnResetFiltrosSetor = document.getElementById('btnResetFiltrosSetor');
+            const canvasCategoriaSetor = document.getElementById('chartCategoriaSetor');
+            const noDataCategoriaSetor = document.getElementById('noDataCategoriaSetor');
+            const cardsContainer = document.getElementById('cardsVariacaoContainer');
+            const noDataVariacaoSetor = document.getElementById('noDataVariacaoSetor');
+
+            // Aba 3 (Item)
+            const selectUnidadeItem = document.getElementById('filtro-unidade-item');
+            const selectEstadoItem = document.getElementById('filtro-estado-item');
+            const selectMunicipioItem = document.getElementById('filtro-municipio-item');
+            const selectEmpresaItem = document.getElementById('filtro-empresa-item');
+            const selectSegmentacaoItem = document.getElementById('filtro-segmentacao-item');
+            const selectCategoriaItem = document.getElementById('filtro-categoria-item');
+            const selectResponsavelItem = document.getElementById('filtro-responsavel-item');
+            const selectTriItem = document.getElementById('filtro-tri-item');
+            const selectMesInicioItem = document.getElementById('mes-inicio-item');
+            const selectMesFimItem = document.getElementById('mes-fim-item');
+            const chkIntervaloItem = document.getElementById('chk-intervalo-item');
+            const mesFimContainerItem = document.getElementById('mes-fim-container-item');
+            const btnResetFiltrosItem = document.getElementById('btnResetFiltrosItem');
+            const canvasEvolucaoItem = document.getElementById('chartEvolucaoItem');
+            const noDataEvolucao = document.getElementById('noDataEvolucao');
+            const tbodyItens = document.getElementById('tbodyItens');
+            const infoItens = document.getElementById('infoItens');
+
+            // Aba 4 (Fornecedor)
+            const selectUnidadeForn = document.getElementById('filtro-unidade-forn');
+            const selectEstadoForn = document.getElementById('filtro-estado-forn');
+            const selectMunicipioForn = document.getElementById('filtro-municipio-forn');
+            const selectEmpresaForn = document.getElementById('filtro-empresa-forn');
+            const selectSegmentacaoForn = document.getElementById('filtro-segmentacao-forn');
+            const selectCategoriaForn = document.getElementById('filtro-categoria-forn');
+            const selectResponsavelForn = document.getElementById('filtro-responsavel-forn');
+            const selectTriForn = document.getElementById('filtro-tri-forn');
+            const selectMesInicioForn = document.getElementById('mes-inicio-forn');
+            const selectMesFimForn = document.getElementById('mes-fim-forn');
+            const chkIntervaloForn = document.getElementById('chk-intervalo-forn');
+            const mesFimContainerForn = document.getElementById('mes-fim-container-forn');
+            const btnResetFiltrosForn = document.getElementById('btnResetFiltrosForn');
+            const canvasFornEstado = document.getElementById('chartFornEstado');
+            const noDataFornEstado = document.getElementById('noDataFornEstado');
+            const tbodyFornecedoresForn = document.getElementById('tbodyFornecedoresForn');
+            const infoFornecedoresForn = document.getElementById('infoFornecedoresForn');
+
+            // ==================== FUNÇÕES UTILITÁRIAS ====================
+            function parseNumero(val) {
+                if (typeof val === 'number') return isNaN(val) ? 0 : val;
+                if (val === null || val === undefined || val === '') return 0;
+                let str = String(val).trim().replace(/[^\d,.\-]/g, '');
+                if (str.includes(',') && str.includes('.')) str = str.replace(/\./g, '').replace(',', '.');
+                else if (str.includes(',')) {
+                    const partes = str.split(',');
+                    str = (partes.length === 2 && partes[1].length <= 2 && !str.includes('.')) ? str.replace(',', '.') : str.replace(/,/g, '');
+                }
+                const num = parseFloat(str);
+                return isNaN(num) ? 0 : num;
+            }
+
+            function normalizarMes(mesVal) {
+                if (!mesVal && mesVal !== 0) return null;
+                const str = String(mesVal).trim().toLowerCase();
+                if (MESES_MAP[str]) return MESES_MAP[str];
+                const num = parseInt(str, 10);
+                if (num >= 1 && num <= 12) return num;
+                for (const [key, val] of Object.entries(MESES_MAP)) {
+                    if (str.includes(key)) return val;
+                }
+                return null;
+            }
+
+            function formatarMoeda(valor) { return 'R$ ' + Math.round(valor).toLocaleString('pt-BR'); }
+            function formatarMoedaCurta(valor) {
+                const inteiro = Math.round(valor);
+                if (inteiro >= 1000000) return 'R$ ' + (inteiro / 1000000).toFixed(1).replace('.', ',') + ' Mi';
+                if (inteiro >= 1000) return 'R$ ' + (inteiro / 1000).toFixed(0).replace('.', ',') + ' mil';
+                return 'R$ ' + inteiro.toLocaleString('pt-BR');
+            }
+            function formatarMoedaDecimal(valor) {
+                return 'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            function normalizarNomeColuna(nome) {
+                return String(nome).trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+            }
+
+            function encontrarColuna(headers, possiveisNomes) {
+                const headersNorm = headers.map((h, i) => ({ norm: normalizarNomeColuna(h), original: h, index: i }));
+                for (const nome of possiveisNomes) {
+                    const nomeNorm = normalizarNomeColuna(nome);
+                    const encontrado = headersNorm.find(h => h.norm === nomeNorm);
+                    if (encontrado) return encontrado.index;
+                }
+                for (const nome of possiveisNomes) {
+                    const nomeNorm = normalizarNomeColuna(nome);
+                    const encontrado = headersNorm.find(h => h.norm.includes(nomeNorm) || nomeNorm.includes(h.norm));
+                    if (encontrado) return encontrado.index;
+                }
+                return -1;
+            }
+
+            // ==================== LEITURA DA PLANILHA ====================
+            function processarArquivo(arrayBuffer, fileName) {
+                try {
+                    const extensao = fileName.split('.').pop().toLowerCase();
+                    let workbook;
+                    if (extensao === 'csv') workbook = XLSX.read(arrayBuffer, { type: 'array', raw: true, codepage: 65001 });
+                    else workbook = XLSX.read(arrayBuffer, { type: 'array', raw: true });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: true, blankrows: false });
+                    if (jsonData.length < 2) throw new Error('Planilha vazia.');
+
+                    const headers = jsonData[0];
+                    const rows = jsonData.slice(1).filter(r => r.some(c => c !== '' && c !== null && c !== undefined));
+
+                    const idxUnidade = encontrarColuna(headers, ['Unidade', 'UNIDADE', 'unidade']);
+                    const idxNota = encontrarColuna(headers, ['Nota', 'NOTA', 'nota']);
+                    const idxRecebimento = encontrarColuna(headers, ['Recebimento', 'RECEBIMENTO', 'recebimento']);
+                    const idxFornecedor = encontrarColuna(headers, ['Fornecedor', 'FORNECEDOR', 'CNPJ', 'fornecedor']);
+                    const idxNome = encontrarColuna(headers, ['Nome', 'NOME', 'nome']);
+                    const idxVlrImpresso = encontrarColuna(headers, ['Vlr Impresso', 'Vlr Impresso', 'Valor Impresso', 'VLR_IMPRESSO', 'Valor Total']);
+                    const idxQuantidade = encontrarColuna(headers, ['Quantidade', 'QUANTIDADE', 'QTD', 'quantidade', 'qtd']);
+                    const idxEmpresa = encontrarColuna(headers, ['Empresa', 'EMPRESA', 'empresa']);
+                    const idxEstado = encontrarColuna(headers, ['Estado', 'ESTADO', 'estado', 'UF']);
+                    const idxMes = encontrarColuna(headers, ['Mês', 'Mes', 'MES', 'mês']);
+                    const idxAno = encontrarColuna(headers, ['Ano', 'ANO', 'ano']);
+                    const idxCategoria = encontrarColuna(headers, ['Categoria', 'CATEGORIA', 'categoria']);
+                    const idxResponsavel = encontrarColuna(headers, ['Responsável', 'Responsavel', 'RESPONSAVEL', 'Comprador', 'COMPRADOR']);
+                    const idxDescricao = encontrarColuna(headers, ['Descrição', 'Descricao', 'DESCRICAO', 'descrição', 'descricao', 'Item']);
+                    const idxItemReceita = encontrarColuna(headers, ['Item receita', 'Item Receita', 'ITEM_RECEITA', 'item receita']);
+                    const idxQtd = encontrarColuna(headers, ['Qtd', 'QTD_CONVERTIDA', 'qtd', 'Quantidade Convertida']);
+                    const idxCUnt = encontrarColuna(headers, ['C_Unt', 'C_UNT', 'Custo Unitario', 'Custo Unitário', 'c_unt']);
+                    const idxMunicipio = encontrarColuna(headers, ['Municipio', 'Município', 'MUNICIPIO', 'municipio']);
+                    const idxSegmentacao = encontrarColuna(headers, ['Segmentação', 'Segmentacao', 'SEGMENTACAO', 'segmentação']);
+                    const idxTri = encontrarColuna(headers, ['TRI', 'Trimestre', 'TRIMESTRE', 'tri']);
+
+                    if (idxVlrImpresso < 0) throw new Error('Coluna "Vlr Impresso" não encontrada.');
+                    if (idxMes < 0 || idxAno < 0) throw new Error('Colunas de Mês/Ano obrigatórias.');
+
+                    dadosBrutos = [];
+                    for (const row of rows) {
+                        const obj = {
+                            unidade: idxUnidade >= 0 ? String(row[idxUnidade] ?? '').trim() : '',
+                            nota: idxNota >= 0 ? String(row[idxNota] ?? '').trim() : '',
+                            recebimento: idxRecebimento >= 0 ? String(row[idxRecebimento] ?? '').trim() : '',
+                            fornecedor: idxFornecedor >= 0 ? String(row[idxFornecedor] ?? '').trim() : '',
+                            nome: idxNome >= 0 ? String(row[idxNome] ?? '').trim() : '',
+                            vlrImpresso: parseNumero(row[idxVlrImpresso]),
+                            quantidade: idxQuantidade >= 0 ? parseNumero(row[idxQuantidade]) : 0,
+                            empresa: idxEmpresa >= 0 ? String(row[idxEmpresa] ?? '').trim() : '',
+                            estado: idxEstado >= 0 ? String(row[idxEstado] ?? '').trim() : '',
+                            mesRaw: String(row[idxMes] ?? '').trim(),
+                            anoRaw: String(row[idxAno] ?? '').trim(),
+                            categoria: idxCategoria >= 0 ? String(row[idxCategoria] ?? '').trim() : '',
+                            responsavel: idxResponsavel >= 0 ? String(row[idxResponsavel] ?? '').trim() : '',
+                            descricao: idxDescricao >= 0 ? String(row[idxDescricao] ?? '').trim() : '',
+                            itemReceita: idxItemReceita >= 0 ? String(row[idxItemReceita] ?? '').trim() : '',
+                            qtd: idxQtd >= 0 ? parseNumero(row[idxQtd]) : 0,
+                            cUnt: idxCUnt >= 0 ? parseNumero(row[idxCUnt]) : 0,
+                            municipio: idxMunicipio >= 0 ? String(row[idxMunicipio] ?? '').trim() : '',
+                            segmentacao: idxSegmentacao >= 0 ? String(row[idxSegmentacao] ?? '').trim() : '',
+                            tri: idxTri >= 0 ? String(row[idxTri] ?? '').trim() : '',
+                        };
+                        obj.mesNum = normalizarMes(obj.mesRaw) || 0;
+                        obj.anoNum = parseInt(String(obj.anoRaw).replace(/[^\d]/g, ''), 10) || 0;
+                        obj.mesNome = (obj.mesNum >= 1 && obj.mesNum <= 12) ? MESES_NOME[obj.mesNum - 1] : obj.mesRaw;
+                        obj.periodoLabel = obj.mesNome + '/' + obj.anoNum;
+                        if (obj.vlrImpresso > 0) dadosBrutos.push(obj);
+                    }
+
+                    if (dadosBrutos.length === 0) throw new Error('Nenhum dado válido.');
+
+                    const periodosSet = new Map();
+                    dadosBrutos.forEach(d => {
+                        if (d.mesNum >= 1 && d.mesNum <= 12 && d.anoNum > 0) {
+                            const key = d.periodoLabel;
+                            if (!periodosSet.has(key)) periodosSet.set(key, { label: d.periodoLabel, mesNome: d.mesNome, mesNum: d.mesNum, ano: d.anoNum });
+                        }
+                    });
+                    periodosUnicos = Array.from(periodosSet.values()).sort((a, b) => a.ano - b.ano || a.mesNum - b.mesNum);
+
+                    preencherTodosFiltros();
+                    atualizarDashboard1();
+                    atualizarDashboard2();
+                    atualizarDashboard3();
+                    atualizarDashboard4();
+                    fileInfo.textContent = '✓ Carregado: ' + dadosBrutos.length.toLocaleString('pt-BR') + ' registros';
+                    fileInfo.className = 'success';
+                } catch (err) {
+                    fileInfo.textContent = '✗ Erro: ' + err.message;
+                    fileInfo.className = 'error';
+                }
+            }
+
+            // ==================== PREENCHIMENTO DE FILTROS ====================
+            function preencherSelect(selectEl, valores, placeholder) {
+                const current = selectEl.value;
+                selectEl.innerHTML = '<option value="">' + placeholder + '</option>';
+                valores.forEach(v => { const opt = document.createElement('option'); opt.value = v; opt.textContent = v; selectEl.appendChild(opt); });
+                if (current && valores.includes(current)) selectEl.value = current;
+            }
+
+            function preencherTodosFiltros() {
+                // Aba 1
+                preencherSelect(selectUnidade, [...new Set(dadosBrutos.map(d => d.unidade).filter(Boolean))].sort(), 'Todas');
+                preencherSelect(selectEmpresa, [...new Set(dadosBrutos.map(d => d.empresa).filter(Boolean))].sort(), 'Todas');
+                preencherSelect(selectCategoria, [...new Set(dadosBrutos.map(d => d.categoria).filter(Boolean))].sort(), 'Todas');
+                preencherSelect(selectComprador, [...new Set(dadosBrutos.map(d => d.responsavel).filter(Boolean))].sort(), 'Todos');
+                const labels = periodosUnicos.map(p => p.label);
+                preencherSelect(selectMesInicio, labels, 'Selecione...');
+                preencherSelect(selectMesFim, labels, 'Selecione...');
+                if (periodosUnicos.length) {
+                    selectMesInicio.value = periodosUnicos[periodosUnicos.length - 1].label;
+                    selectMesFim.value = periodosUnicos[periodosUnicos.length - 1].label;
+                }
+
+                // Aba 2
+                preencherSelect(selectEstadoSetor, [...new Set(dadosBrutos.map(d => d.estado).filter(Boolean))].sort(), 'Todos');
+                preencherSelect(selectCategoriaSetor, [...new Set(dadosBrutos.map(d => d.categoria).filter(Boolean))].sort(), 'Todas');
+                let compradoresSetor = [...new Set(dadosBrutos.map(d => d.responsavel).filter(Boolean))]
+                    .filter(comp => !COMPRADORES_IGNORADOS.includes(comp.toUpperCase())).sort();
+                preencherSelect(selectCompradorSetor, compradoresSetor, 'Todos');
+                preencherSelect(selectMesInicioSetor, labels, 'Selecione...');
+                preencherSelect(selectMesFimSetor, labels, 'Selecione...');
+                if (periodosUnicos.length) {
+                    selectMesInicioSetor.value = periodosUnicos[periodosUnicos.length - 1].label;
+                    selectMesFimSetor.value = periodosUnicos[periodosUnicos.length - 1].label;
+                }
+
+                // Aba 3 (Item)
+                preencherSelect(selectUnidadeItem, [...new Set(dadosBrutos.map(d => d.unidade).filter(Boolean))].sort(), 'Todas');
+                preencherSelect(selectEstadoItem, [...new Set(dadosBrutos.map(d => d.estado).filter(Boolean))].sort(), 'Todos');
+                preencherSelect(selectMunicipioItem, [...new Set(dadosBrutos.map(d => d.municipio).filter(Boolean))].sort(), 'Todos');
+                preencherSelect(selectEmpresaItem, [...new Set(dadosBrutos.map(d => d.empresa).filter(Boolean))].sort(), 'Todas');
+                preencherSelect(selectSegmentacaoItem, [...new Set(dadosBrutos.map(d => d.segmentacao).filter(Boolean))].sort(), 'Todas');
+                preencherSelect(selectCategoriaItem, [...new Set(dadosBrutos.map(d => d.categoria).filter(Boolean))].sort(), 'Todas');
+                preencherSelect(selectResponsavelItem, [...new Set(dadosBrutos.map(d => d.responsavel).filter(Boolean))].sort(), 'Todos');
+                preencherSelect(selectTriItem, [...new Set(dadosBrutos.map(d => d.tri).filter(Boolean))].sort(), 'Todos');
+                preencherSelect(selectMesInicioItem, labels, 'Selecione...');
+                preencherSelect(selectMesFimItem, labels, 'Selecione...');
+                if (periodosUnicos.length) {
+                    selectMesInicioItem.value = periodosUnicos[periodosUnicos.length - 1].label;
+                    selectMesFimItem.value = periodosUnicos[periodosUnicos.length - 1].label;
+                }
+
+                // Aba 4 (Fornecedor)
+                preencherSelect(selectUnidadeForn, [...new Set(dadosBrutos.map(d => d.unidade).filter(Boolean))].sort(), 'Todas');
+                preencherSelect(selectEstadoForn, [...new Set(dadosBrutos.map(d => d.estado).filter(Boolean))].sort(), 'Todos');
+                preencherSelect(selectMunicipioForn, [...new Set(dadosBrutos.map(d => d.municipio).filter(Boolean))].sort(), 'Todos');
+                preencherSelect(selectEmpresaForn, [...new Set(dadosBrutos.map(d => d.empresa).filter(Boolean))].sort(), 'Todas');
+                preencherSelect(selectSegmentacaoForn, [...new Set(dadosBrutos.map(d => d.segmentacao).filter(Boolean))].sort(), 'Todas');
+                preencherSelect(selectCategoriaForn, [...new Set(dadosBrutos.map(d => d.categoria).filter(Boolean))].sort(), 'Todas');
+                preencherSelect(selectResponsavelForn, [...new Set(dadosBrutos.map(d => d.responsavel).filter(Boolean))].sort(), 'Todos');
+                preencherSelect(selectTriForn, [...new Set(dadosBrutos.map(d => d.tri).filter(Boolean))].sort(), 'Todos');
+                preencherSelect(selectMesInicioForn, labels, 'Selecione...');
+                preencherSelect(selectMesFimForn, labels, 'Selecione...');
+                if (periodosUnicos.length) {
+                    selectMesInicioForn.value = periodosUnicos[periodosUnicos.length - 1].label;
+                    selectMesFimForn.value = periodosUnicos[periodosUnicos.length - 1].label;
+                }
+            }
+
+            // ==================== OBTENÇÃO DE DADOS FILTRADOS ====================
+            function getIndicesPeriodo(usarIntervalo, inicioLabel, fimLabel) {
+                let idxInicio = periodosUnicos.findIndex(p => p.label === inicioLabel);
+                let idxFim = usarIntervalo ? periodosUnicos.findIndex(p => p.label === fimLabel) : idxInicio;
+                if (idxInicio < 0) idxInicio = 0;
+                if (idxFim < 0) idxFim = periodosUnicos.length - 1;
+                if (idxInicio > idxFim) [idxInicio, idxFim] = [idxFim, idxInicio];
+                return { idxInicio, idxFim };
+            }
+
+            function getDadosFiltrados(filtros, usarIntervalo, inicioLabel, fimLabel) {
+                if (!dadosBrutos.length) return [];
+                const { idxInicio, idxFim } = getIndicesPeriodo(usarIntervalo, inicioLabel, fimLabel);
+                const labelsValidos = new Set(periodosUnicos.slice(idxInicio, idxFim + 1).map(p => p.label));
+                return dadosBrutos.filter(d => {
+                    for (const [campo, valor] of Object.entries(filtros)) {
+                        if (valor && d[campo] !== valor) return false;
+                    }
+                    if (!labelsValidos.has(d.periodoLabel)) return false;
+                    return true;
+                });
+            }
+
+            function getDadosFiltrados1() {
+                return getDadosFiltrados(
+                    { unidade: selectUnidade.value, empresa: selectEmpresa.value, categoria: selectCategoria.value, responsavel: selectComprador.value },
+                    chkIntervalo.checked, selectMesInicio.value, selectMesFim.value
+                );
+            }
+
+            function getDadosFiltrados2() {
+                return getDadosFiltrados(
+                    { estado: selectEstadoSetor.value, categoria: selectCategoriaSetor.value, responsavel: selectCompradorSetor.value },
+                    chkIntervaloSetor.checked, selectMesInicioSetor.value, selectMesFimSetor.value
+                ).filter(d => !COMPRADORES_IGNORADOS.includes(d.responsavel.toUpperCase()));
+            }
+
+            function getDadosFiltrados3() {
+                return getDadosFiltrados({
+                    unidade: selectUnidadeItem.value,
+                    estado: selectEstadoItem.value,
+                    municipio: selectMunicipioItem.value,
+                    empresa: selectEmpresaItem.value,
+                    segmentacao: selectSegmentacaoItem.value,
+                    categoria: selectCategoriaItem.value,
+                    responsavel: selectResponsavelItem.value,
+                    tri: selectTriItem.value
+                }, chkIntervaloItem.checked, selectMesInicioItem.value, selectMesFimItem.value);
+            }
+
+            function getDadosFiltrados4() {
+                return getDadosFiltrados({
+                    unidade: selectUnidadeForn.value,
+                    estado: selectEstadoForn.value,
+                    municipio: selectMunicipioForn.value,
+                    empresa: selectEmpresaForn.value,
+                    segmentacao: selectSegmentacaoForn.value,
+                    categoria: selectCategoriaForn.value,
+                    responsavel: selectResponsavelForn.value,
+                    tri: selectTriForn.value
+                }, chkIntervaloForn.checked, selectMesInicioForn.value, selectMesFimForn.value);
+            }
+
+            // ==================== ATUALIZAÇÃO DASHBOARD 1 ====================
+            function atualizarDashboard1() {
+                const dados = getDadosFiltrados1();
+                const totalPeriodo = dados.reduce((s, d) => s + d.vlrImpresso, 0);
+                const anoFoco = periodosUnicos.find(p => p.label === selectMesInicio.value)?.ano || new Date().getFullYear();
+                const dadosAno = dadosBrutos.filter(d => d.anoNum === anoFoco);
+                const acumuladoAno = dadosAno.reduce((s, d) => s + d.vlrImpresso, 0);
+                const totalNotas = new Set(dados.map(d => d.nota + '|||' + d.recebimento)).size;
+                const totalFornecedores = new Set(dados.map(d => d.fornecedor)).size;
+
+                indTotalMes.textContent = formatarMoeda(totalPeriodo);
+                indAcumuladoAno.textContent = formatarMoeda(acumuladoAno);
+                indTotalNotas.textContent = totalNotas.toLocaleString('pt-BR');
+                indTotalFornecedores.textContent = totalFornecedores.toLocaleString('pt-BR');
+
+                if (!dadosAno.length) {
+                    if (chartBarInst) { chartBarInst.destroy(); chartBarInst = null; }
+                    canvasBar.style.display = 'none'; noDataBar.style.display = 'flex';
+                } else {
+                    canvasBar.style.display = 'block'; noDataBar.style.display = 'none';
+                    const somaMes = Array(12).fill(0);
+                    dadosAno.forEach(d => { if (d.mesNum >= 1 && d.mesNum <= 12) somaMes[d.mesNum - 1] += d.vlrImpresso; });
+                    const acumulado = [], labels = [];
+                    let soma = 0;
+                    for (let i = 0; i < 12; i++) { soma += somaMes[i]; acumulado.push(Math.round(soma)); labels.push(MESES_NOME[i].substring(0, 3)); }
+                    if (chartBarInst) chartBarInst.destroy();
+                    chartBarInst = new Chart(canvasBar.getContext('2d'), {
+                        type: 'bar', data: { labels, datasets: [{ data: acumulado, backgroundColor: '#1a73e8', borderRadius: 6 }] },
+                        options: { plugins: { legend: { display: false }, datalabels: { anchor: 'center', align: 'center', font: { weight: 'bold' }, color: '#fff', formatter: v => formatarMoedaCurta(v) } } }
+                    });
+                }
+
+                if (!dados.length) {
+                    if (chartPieInst) { chartPieInst.destroy(); chartPieInst = null; }
+                    canvasPie.style.display = 'none'; noDataPie.style.display = 'flex';
+                } else {
+                    canvasPie.style.display = 'block'; noDataPie.style.display = 'none';
+                    const porEstado = {};
+                    dados.forEach(d => { const e = d.estado || 'Não informado'; porEstado[e] = (porEstado[e] || 0) + d.vlrImpresso; });
+                    const labels = Object.keys(porEstado), valores = labels.map(l => Math.round(porEstado[l]));
+                    if (chartPieInst) chartPieInst.destroy();
+                    chartPieInst = new Chart(canvasPie.getContext('2d'), {
+                        type: 'pie', data: { labels, datasets: [{ data: valores, backgroundColor: ['#1a73e8','#0d904f','#e8710a','#7620a0','#007b83'] }] },
+                        options: { plugins: { legend: { display: false }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: (v, ctx) => { const total = ctx.dataset.data.reduce((a,b)=>a+b,0); const pct = ((v/total)*100).toFixed(1); return formatarMoedaCurta(v) + '\n(' + pct + '%)'; } } } }
+                    });
+                }
+
+                if (!dados.length) {
+                    tbodyFornecedores.innerHTML = ''; infoFornecedores.textContent = 'Nenhum dado.';
+                } else {
+                    const mapa = new Map();
+                    dados.forEach(d => { const nome = d.nome || 'Fornecedor sem nome'; mapa.set(nome, (mapa.get(nome) || 0) + d.vlrImpresso); });
+                    const totalGeral = Array.from(mapa.values()).reduce((s, v) => s + v, 0);
+                    const lista = Array.from(mapa.entries()).map(([nome, valor]) => ({ nome, valor })).sort((a, b) => b.valor - a.valor);
+                    tbodyFornecedores.innerHTML = '';
+                    lista.forEach((item, i) => {
+                        const pct = totalGeral ? ((item.valor / totalGeral) * 100).toFixed(2) : '0.00';
+                        let pos = i + 1;
+                        if (i === 0) pos = '🥇 1'; else if (i === 1) pos = '🥈 2'; else if (i === 2) pos = '🥉 3';
+                        const tr = document.createElement('tr');
+                        if (i <= 4) tr.classList.add('negrito');
+                        tr.innerHTML = `<td>${pos}</td><td>${item.nome}</td><td class="valor-cell">${formatarMoedaDecimal(item.valor)}</td><td class="percent-cell">${pct}%</td>`;
+                        tbodyFornecedores.appendChild(tr);
+                    });
+                    infoFornecedores.textContent = `Exibindo todos os ${lista.length} fornecedores.`;
+                }
+            }
+
+            // ==================== ATUALIZAÇÃO DASHBOARD 2 (Comprador) ====================
+            function atualizarGraficoCategoriaSetor() {
+                const dados = getDadosFiltrados2();
+                if (!dados.length) {
+                    if (chartCategoriaSetorInst) { chartCategoriaSetorInst.destroy(); chartCategoriaSetorInst = null; }
+                    canvasCategoriaSetor.style.display = 'none'; noDataCategoriaSetor.style.display = 'flex';
+                    return;
+                }
+                canvasCategoriaSetor.style.display = 'block'; noDataCategoriaSetor.style.display = 'none';
+                const CATEGORIAS_PERMITIDAS = ['DESCARTAVEIS', 'ESTOCAVEIS', 'GAS/COMBUSTIVEIS', 'HORTI', 'LIMPEZA', 'MAQUINAS E/OU EQUIPAMENTOS', 'PADARIA', 'PERECIVEIS', 'SUPLEMENTOS ESPECIAIS', 'SUCOS POLPA'];
+                const mapaCat = new Map();
+                CATEGORIAS_PERMITIDAS.forEach(cat => mapaCat.set(cat, 0));
+                dados.forEach(d => {
+                    const catUpper = (d.categoria || '').trim().toUpperCase();
+                    if (CATEGORIAS_PERMITIDAS.includes(catUpper)) mapaCat.set(catUpper, (mapaCat.get(catUpper) || 0) + d.vlrImpresso);
+                });
+                const totalGeral = Array.from(mapaCat.values()).reduce((s, v) => s + v, 0);
+                const lista = Array.from(mapaCat.entries()).map(([cat, valor]) => ({ cat, valor })).sort((a, b) => b.valor - a.valor);
+                const labels = lista.map(i => i.cat), percentuais = lista.map(i => totalGeral ? (i.valor / totalGeral) * 100 : 0);
+                const maxP = Math.max(...percentuais, 10);
+                if (chartCategoriaSetorInst) chartCategoriaSetorInst.destroy();
+                chartCategoriaSetorInst = new Chart(canvasCategoriaSetor.getContext('2d'), {
+                    type: 'bar', data: { labels, datasets: [{ data: percentuais, backgroundColor: ['#1a73e8','#0d904f','#e8710a','#7620a0','#007b83','#d93025','#f9ab00','#5f6368','#1e8e3e','#9334e6'], borderRadius: 6 }] },
+                    options: { layout: { padding: { top: 30 } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', offset: 4, font: { weight: 'bold', size: 12 }, color: '#1d1d1f', formatter: v => v.toFixed(2) + '%' } }, scales: { y: { max: maxP * 1.15, ticks: { callback: v => v.toFixed(1) + '%' } } } }
+                });
+            }
+
+            function gerarComentario(variacaoValor, variacaoQtd, temPeriodoAnterior) {
+                if (!temPeriodoAnterior) return 'Sem dados do período anterior para comparação.';
+                if (variacaoValor === null || variacaoQtd === null) return 'Dados insuficientes para análise.';
+                const vValor = parseFloat(variacaoValor), vQtd = parseFloat(variacaoQtd);
+                if (vQtd > 0 && vValor < 0) return 'Quantidade comprada foi maior que no período anterior, e o valor total foi menor.';
+                if (vQtd > 0 && vValor > 0 && vQtd > vValor) return 'Quantidade cresceu mais que o valor, indicando boa negociação.';
+                if (vQtd < 0 && vValor < 0 && vQtd < vValor) return 'Apesar da redução na quantidade, o valor caiu proporcionalmente mais.';
+                if (vQtd > 0 && vValor > 0 && vQtd <= vValor) return 'O valor aumentou mais que a quantidade. Possível aumento de preços.';
+                if (vQtd < 0 && vValor > 0) return 'Quantidade menor, porém valor maior. Custo unitário pode ter subido.';
+                if (vQtd < 0 && vValor < 0 && vQtd >= vValor) return 'Queda na quantidade, mas o valor não caiu na mesma proporção.';
+                return 'Variação dentro do esperado.';
+            }
+
+            function atualizarCardsVariacao() {
+                const dados = getDadosFiltrados2();
+                if (!dados.length) { cardsContainer.innerHTML = ''; noDataVariacaoSetor.style.display = 'flex'; return; }
+                const inicioLabel = selectMesInicioSetor.value, fimLabel = chkIntervaloSetor.checked ? selectMesFimSetor.value : inicioLabel;
+                const { idxInicio, idxFim } = getIndicesPeriodo(chkIntervaloSetor.checked, inicioLabel, fimLabel);
+                const duracao = idxFim - idxInicio + 1;
+                const idxInicioAnt = idxInicio - duracao, idxFimAnt = idxInicio - 1;
+                let periodoAntLabels = new Set(), temAnterior = false;
+                if (idxInicioAnt >= 0 && idxFimAnt >= 0) {
+                    temAnterior = true;
+                    for (let i = idxInicioAnt; i <= idxFimAnt; i++) periodoAntLabels.add(periodosUnicos[i].label);
+                }
+                const dadosAnt = temAnterior ? dadosBrutos.filter(d => periodoAntLabels.has(d.periodoLabel)) : [];
+                const compradoresSet = new Set(dados.map(d => d.responsavel || 'Não informado'));
+                const cardsData = [];
+                for (const comp of compradoresSet) {
+                    if (COMPRADORES_IGNORADOS.includes(comp.toUpperCase())) continue;
+                    const dadosAtual = dados.filter(d => d.responsavel === comp), dadosAnterior = dadosAnt.filter(d => d.responsavel === comp);
+                    const vlrAtual = dadosAtual.reduce((s, d) => s + d.vlrImpresso, 0), qtdAtual = dadosAtual.reduce((s, d) => s + d.quantidade, 0);
+                    let vlrAnt = 0, qtdAnt = 0;
+                    if (dadosAnterior.length) { vlrAnt = dadosAnterior.reduce((s, d) => s + d.vlrImpresso, 0); qtdAnt = dadosAnterior.reduce((s, d) => s + d.quantidade, 0); }
+                    let cor = 'cinza', textoVar = 'N/D', comentario = '';
+                    if (temAnterior && vlrAnt > 0 && qtdAnt > 0) {
+                        const varValor = ((vlrAtual - vlrAnt) / vlrAnt) * 100, varQtd = ((qtdAtual - qtdAnt) / qtdAnt) * 100;
+                        cor = varQtd > varValor ? 'verde' : 'vermelho';
+                        textoVar = varValor.toFixed(1) + '%';
+                        comentario = gerarComentario(varValor, varQtd, true);
+                    } else { comentario = gerarComentario(null, null, false); }
+                    cardsData.push({ comprador: comp, vlr: vlrAtual, qtd: qtdAtual, variacao: textoVar, cor, comentario });
+                }
+                cardsData.sort((a, b) => b.vlr - a.vlr);
+                cardsContainer.innerHTML = '';
+                if (!cardsData.length) { noDataVariacaoSetor.style.display = 'flex'; return; }
+                noDataVariacaoSetor.style.display = 'none';
+                for (const card of cardsData) {
+                    const div = document.createElement('div'); div.className = 'comprador-card';
+                    div.innerHTML = `<div class="comment-icon">💬</div><div class="card-nome">${card.comprador}</div><div class="card-valor">Valor: <strong>${formatarMoedaDecimal(card.vlr)}</strong></div><div class="card-qtd">Qtd: <strong>${card.qtd.toLocaleString('pt-BR')}</strong></div><div class="card-variacao ${card.cor}">${card.variacao}</div><div class="card-tooltip">${card.comentario}</div>`;
+                    cardsContainer.appendChild(div);
+                }
+            }
+
+            function atualizarDashboard2() { atualizarGraficoCategoriaSetor(); atualizarCardsVariacao(); }
+
+            // ==================== ATUALIZAÇÃO DASHBOARD 3 (Item) ====================
+            function atualizarGraficoEvolucao() {
+                const dados = getDadosFiltrados3();
+                if (!dados.length) {
+                    if (chartEvolucaoInst) { chartEvolucaoInst.destroy(); chartEvolucaoInst = null; }
+                    canvasEvolucaoItem.style.display = 'none'; noDataEvolucao.style.display = 'flex'; return;
+                }
+                canvasEvolucaoItem.style.display = 'block'; noDataEvolucao.style.display = 'none';
+                const { idxInicio, idxFim } = getIndicesPeriodo(chkIntervaloItem.checked, selectMesInicioItem.value, selectMesFimItem.value);
+                const periodosVisiveis = periodosUnicos.slice(idxInicio, idxFim + 1);
+                const labels = periodosVisiveis.map(p => p.label);
+                const custos = [], quantidades = [];
+                const mapa = new Map();
+                dados.forEach(d => { const k = d.periodoLabel; if (!mapa.has(k)) mapa.set(k, { vlr: 0, qtd: 0 }); const e = mapa.get(k); e.vlr += d.vlrImpresso; e.qtd += d.quantidade; });
+                for (const p of periodosVisiveis) {
+                    const entry = mapa.get(p.label);
+                    custos.push(entry ? entry.vlr : null); quantidades.push(entry ? entry.qtd : null);
+                }
+                if (chartEvolucaoInst) chartEvolucaoInst.destroy();
+                chartEvolucaoInst = new Chart(canvasEvolucaoItem.getContext('2d'), {
+                    type: 'line', data: { labels, datasets: [
+                        { label: 'Custo Total (R$)', data: custos, borderColor: '#c62828', backgroundColor: 'transparent', yAxisID: 'y', tension: 0.2 },
+                        { label: 'Quantidade', data: quantidades, borderColor: '#1a73e8', backgroundColor: 'transparent', yAxisID: 'y1', tension: 0.2 }
+                    ]},
+                    options: { responsive: true, plugins: { datalabels: { display: false } }, scales: {
+                        y: { type: 'linear', position: 'left', title: { display: true, text: 'Custo (R$)' }, beginAtZero: true },
+                        y1: { type: 'linear', position: 'right', title: { display: true, text: 'Quantidade' }, beginAtZero: true, grid: { drawOnChartArea: false } }
+                    }}
+                });
+            }
+
+            function atualizarTabelaItens() {
+                const dados = getDadosFiltrados3();
+                if (!dados.length) { tbodyItens.innerHTML = ''; infoItens.textContent = 'Nenhum dado.'; return; }
+                
+                const mapaItens = new Map();
+                dados.forEach(d => {
+                    const nome = d.itemReceita && d.itemReceita.trim() !== '' ? d.itemReceita.trim() : 'Item sem receita';
+                    if (!mapaItens.has(nome)) mapaItens.set(nome, { vlr: 0, qtd: 0 });
+                    const entry = mapaItens.get(nome);
+                    entry.vlr += d.vlrImpresso;
+                    entry.qtd += d.qtd;
+                });
+
+                const lista = Array.from(mapaItens.entries())
+                    .map(([item, data]) => ({ item, vlr: data.vlr, qtd: data.qtd, custoMedio: data.qtd > 0 ? data.vlr / data.qtd : 0 }))
+                    .sort((a, b) => b.vlr - a.vlr);
+
+                tbodyItens.innerHTML = '';
+                lista.forEach((obj, i) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${i + 1}</td>
+                        <td>${obj.item}</td>
+                        <td class="valor-cell">${obj.qtd.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td class="valor-cell">${formatarMoedaDecimal(obj.vlr)}</td>
+                        <td class="valor-cell">${formatarMoedaDecimal(obj.custoMedio)}</td>
+                    `;
+                    tbodyItens.appendChild(tr);
+                });
+                infoItens.textContent = `Exibindo todos os ${lista.length} itens.`;
+            }
+
+            function atualizarDashboard3() { atualizarGraficoEvolucao(); atualizarTabelaItens(); }
+
+            // ==================== ATUALIZAÇÃO DASHBOARD 4 (Fornecedor) ====================
+            function atualizarGraficoFornEstado() {
+                const dados = getDadosFiltrados4();
+                if (!dados.length) {
+                    if (chartFornEstadoInst) { chartFornEstadoInst.destroy(); chartFornEstadoInst = null; }
+                    canvasFornEstado.style.display = 'none';
+                    noDataFornEstado.style.display = 'flex';
+                    return;
+                }
+                canvasFornEstado.style.display = 'block';
+                noDataFornEstado.style.display = 'none';
+
+                const mapaFornEstado = new Map();
+                dados.forEach(d => {
+                    const estado = d.estado && d.estado.trim() !== '' ? d.estado.trim().toUpperCase() : 'OUTROS';
+                    if (!mapaFornEstado.has(estado)) {
+                        mapaFornEstado.set(estado, new Set());
+                    }
+                    if (d.fornecedor) {
+                        mapaFornEstado.get(estado).add(d.fornecedor);
+                    }
+                });
+
+                const lista = Array.from(mapaFornEstado.entries())
+                    .map(([estado, fornecedores]) => ({ estado, qtd: fornecedores.size }))
+                    .sort((a, b) => b.qtd - a.qtd);
+
+                const labels = lista.map(item => item.estado);
+                const quantidades = lista.map(item => item.qtd);
+
+                if (chartFornEstadoInst) chartFornEstadoInst.destroy();
+                const ctx = canvasFornEstado.getContext('2d');
+                chartFornEstadoInst = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Fornecedores',
+                            data: quantidades,
+                            backgroundColor: '#1a73e8',
+                            borderRadius: 4,
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { callbacks: { label: (ctx) => `${ctx.raw} fornecedor(es)` } },
+                            datalabels: { anchor: 'end', align: 'end', font: { weight: 'bold', size: 11 }, color: '#1d1d1f', formatter: (value) => value }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'Quantidade de Fornecedores' }, beginAtZero: true, ticks: { precision: 0 } },
+                            y: { title: { display: true, text: 'Estado' } }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+            }
+
+            function atualizarRankingFornecedoresForn() {
+                const dados = getDadosFiltrados4();
+                if (!dados.length) {
+                    tbodyFornecedoresForn.innerHTML = '';
+                    infoFornecedoresForn.textContent = 'Nenhum dado.';
+                    return;
+                }
+                const mapa = new Map();
+                dados.forEach(d => { const nome = d.nome || 'Fornecedor sem nome'; mapa.set(nome, (mapa.get(nome) || 0) + d.vlrImpresso); });
+                const totalGeral = Array.from(mapa.values()).reduce((s, v) => s + v, 0);
+                const lista = Array.from(mapa.entries()).map(([nome, valor]) => ({ nome, valor })).sort((a, b) => b.valor - a.valor);
+                tbodyFornecedoresForn.innerHTML = '';
+                lista.forEach((item, i) => {
+                    const pct = totalGeral ? ((item.valor / totalGeral) * 100).toFixed(2) : '0.00';
+                    let pos = i + 1;
+                    if (i === 0) pos = '🥇 1'; else if (i === 1) pos = '🥈 2'; else if (i === 2) pos = '🥉 3';
+                    const tr = document.createElement('tr');
+                    if (i <= 4) tr.classList.add('negrito');
+                    tr.innerHTML = `<td>${pos}</td><td>${item.nome}</td><td class="valor-cell">${formatarMoedaDecimal(item.valor)}</td><td class="percent-cell">${pct}%</td>`;
+                    tbodyFornecedoresForn.appendChild(tr);
+                });
+                infoFornecedoresForn.textContent = `Exibindo todos os ${lista.length} fornecedores.`;
+            }
+
+            function atualizarDashboard4() { atualizarGraficoFornEstado(); atualizarRankingFornecedoresForn(); }
+
+            // ==================== EVENTOS ====================
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0]; if (!file) return;
+                fileInfo.textContent = 'Processando...';
+                const reader = new FileReader();
+                reader.onload = evt => processarArquivo(new Uint8Array(evt.target.result), file.name);
+                reader.readAsArrayBuffer(file);
+            });
+
+            // Eventos Aba 1
+            chkIntervalo.addEventListener('change', function() {
+                mesFimContainer.classList.toggle('hidden', !this.checked);
+                if (this.checked && !selectMesFim.value && selectMesInicio.value) selectMesFim.value = selectMesInicio.value;
+                atualizarDashboard1();
+            });
+            [selectUnidade, selectEmpresa, selectCategoria, selectComprador, selectMesInicio, selectMesFim].forEach(el => el.addEventListener('change', atualizarDashboard1));
+            btnResetFiltros.addEventListener('click', () => {
+                selectUnidade.value = ''; selectEmpresa.value = ''; selectCategoria.value = ''; selectComprador.value = '';
+                chkIntervalo.checked = false; mesFimContainer.classList.add('hidden');
+                if (periodosUnicos.length) { selectMesInicio.value = periodosUnicos[periodosUnicos.length - 1].label; selectMesFim.value = periodosUnicos[periodosUnicos.length - 1].label; }
+                atualizarDashboard1();
+            });
+
+            // Eventos Aba 2
+            chkIntervaloSetor.addEventListener('change', function() {
+                mesFimContainerSec.classList.toggle('hidden', !this.checked);
+                if (this.checked && !selectMesFimSetor.value && selectMesInicioSetor.value) selectMesFimSetor.value = selectMesInicioSetor.value;
+                atualizarDashboard2();
+            });
+            [selectEstadoSetor, selectCategoriaSetor, selectCompradorSetor, selectMesInicioSetor, selectMesFimSetor].forEach(el => el.addEventListener('change', atualizarDashboard2));
+            btnResetFiltrosSetor.addEventListener('click', () => {
+                selectEstadoSetor.value = ''; selectCategoriaSetor.value = ''; selectCompradorSetor.value = '';
+                chkIntervaloSetor.checked = false; mesFimContainerSec.classList.add('hidden');
+                if (periodosUnicos.length) { selectMesInicioSetor.value = periodosUnicos[periodosUnicos.length - 1].label; selectMesFimSetor.value = periodosUnicos[periodosUnicos.length - 1].label; }
+                atualizarDashboard2();
+            });
+
+            // Eventos Aba 3 (Item)
+            chkIntervaloItem.addEventListener('change', function() {
+                mesFimContainerItem.classList.toggle('hidden', !this.checked);
+                if (this.checked && !selectMesFimItem.value && selectMesInicioItem.value) selectMesFimItem.value = selectMesInicioItem.value;
+                atualizarDashboard3();
+            });
+            [selectUnidadeItem, selectEstadoItem, selectMunicipioItem, selectEmpresaItem, selectSegmentacaoItem, selectCategoriaItem, selectResponsavelItem, selectTriItem, selectMesInicioItem, selectMesFimItem].forEach(el => el.addEventListener('change', atualizarDashboard3));
+            btnResetFiltrosItem.addEventListener('click', () => {
+                selectUnidadeItem.value = ''; selectEstadoItem.value = ''; selectMunicipioItem.value = ''; selectEmpresaItem.value = '';
+                selectSegmentacaoItem.value = ''; selectCategoriaItem.value = ''; selectResponsavelItem.value = ''; selectTriItem.value = '';
+                chkIntervaloItem.checked = false; mesFimContainerItem.classList.add('hidden');
+                if (periodosUnicos.length) { selectMesInicioItem.value = periodosUnicos[periodosUnicos.length - 1].label; selectMesFimItem.value = periodosUnicos[periodosUnicos.length - 1].label; }
+                atualizarDashboard3();
+            });
+
+            // Eventos Aba 4 (Fornecedor)
+            chkIntervaloForn.addEventListener('change', function() {
+                mesFimContainerForn.classList.toggle('hidden', !this.checked);
+                if (this.checked && !selectMesFimForn.value && selectMesInicioForn.value) selectMesFimForn.value = selectMesInicioForn.value;
+                atualizarDashboard4();
+            });
+            [selectUnidadeForn, selectEstadoForn, selectMunicipioForn, selectEmpresaForn, selectSegmentacaoForn, selectCategoriaForn, selectResponsavelForn, selectTriForn, selectMesInicioForn, selectMesFimForn].forEach(el => el.addEventListener('change', atualizarDashboard4));
+            btnResetFiltrosForn.addEventListener('click', () => {
+                selectUnidadeForn.value = ''; selectEstadoForn.value = ''; selectMunicipioForn.value = ''; selectEmpresaForn.value = '';
+                selectSegmentacaoForn.value = ''; selectCategoriaForn.value = ''; selectResponsavelForn.value = ''; selectTriForn.value = '';
+                chkIntervaloForn.checked = false; mesFimContainerForn.classList.add('hidden');
+                if (periodosUnicos.length) { selectMesInicioForn.value = periodosUnicos[periodosUnicos.length - 1].label; selectMesFimForn.value = periodosUnicos[periodosUnicos.length - 1].label; }
+                atualizarDashboard4();
+            });
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                    setTimeout(() => {
+                        if (chartBarInst) chartBarInst.resize(); if (chartPieInst) chartPieInst.resize();
+                        if (chartCategoriaSetorInst) chartCategoriaSetorInst.resize();
+                        if (chartEvolucaoInst) chartEvolucaoInst.resize();
+                        if (chartFornEstadoInst) chartFornEstadoInst.resize();
+                    }, 150);
+                });
+            });
+
+            preencherTodosFiltros();
+            atualizarDashboard1(); atualizarDashboard2(); atualizarDashboard3(); atualizarDashboard4();
+            mesFimContainer.classList.add('hidden'); mesFimContainerSec.classList.add('hidden'); mesFimContainerItem.classList.add('hidden'); mesFimContainerForn.classList.add('hidden');
+        })();
+    </script>
+</body>
+</html>
