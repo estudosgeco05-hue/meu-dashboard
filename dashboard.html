@@ -1328,6 +1328,24 @@
 
             function atualizarDashboard4() { atualizarGraficoFornEstado(); atualizarRankingFornecedoresForn(); }
 
+            // ==================== CARREGAMENTO AUTOMÁTICO DA PLANILHA ====================
+            function carregarPlanilhaAutomatica() {
+                const urlPlanilha = 'dados.xlsx';  // nome do arquivo na mesma pasta
+                fetch(urlPlanilha)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Planilha não encontrada.');
+                        return response.arrayBuffer();
+                    })
+                    .then(arrayBuffer => {
+                        processarArquivo(new Uint8Array(arrayBuffer), urlPlanilha);
+                        console.log('✅ Planilha carregada automaticamente.');
+                    })
+                    .catch(err => {
+                        console.warn('⚠️ Planilha automática não carregada:', err.message);
+                        fileInfo.textContent = 'Planilha não encontrada. Faça upload manual.';
+                    });
+            }
+
             // ==================== EVENTOS ====================
             fileInput.addEventListener('change', function(e) {
                 const file = e.target.files[0]; if (!file) return;
@@ -1410,9 +1428,12 @@
                 });
             });
 
+            // ==================== INICIALIZAÇÃO ====================
             preencherTodosFiltros();
+            carregarPlanilhaAutomatica();  // Tenta carregar a planilha automaticamente
             atualizarDashboard1(); atualizarDashboard2(); atualizarDashboard3(); atualizarDashboard4();
-            mesFimContainer.classList.add('hidden'); mesFimContainerSec.classList.add('hidden'); mesFimContainerItem.classList.add('hidden'); mesFimContainerForn.classList.add('hidden');
+            mesFimContainer.classList.add('hidden'); mesFimContainerSec.classList.add('hidden');
+            mesFimContainerItem.classList.add('hidden'); mesFimContainerForn.classList.add('hidden');
         })();
     </script>
 </body>
