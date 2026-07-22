@@ -22,8 +22,8 @@
             --accent-orange: #e8710a;
             --accent-purple: #7620a0;
             --accent-teal: #007b83;
-            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10), 0 2px 4px rgba(0, 0, 0, 0.06);
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
             --radius: 10px;
             --radius-sm: 6px;
             --transition: 0.2s ease;
@@ -109,7 +109,7 @@
             font-size: 0.82rem; background: #fafbfc; color: var(--text); font-family: inherit;
         }
         .filter-group select:focus, .filter-group input:focus {
-            outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1); background: #fff;
+            outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,0.1); background: #fff;
         }
         .interval-checkbox {
             display: flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 500; cursor: pointer;
@@ -229,8 +229,8 @@
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>
                         Selecionar Arquivo
                     </label>
-                    <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsb,.csv">
-                    <span id="file-info">Planilha não carregada. Faça upload ou aguarde.</span>
+                    <input type="file" id="fileInput" accept=".json,.xlsx,.xls,.xlsb,.csv">
+                    <span id="file-info">JSON não carregado. Faça upload ou aguarde.</span>
                 </div>
             </div>
             <div class="panel">
@@ -523,106 +523,41 @@
                 return 'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             }
 
-            function normalizarNomeColuna(nome) {
-                return String(nome).trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-            }
-
-            function encontrarColuna(headers, possiveisNomes) {
-                const headersNorm = headers.map((h, i) => ({ norm: normalizarNomeColuna(h), original: h, index: i }));
-                for (const nome of possiveisNomes) {
-                    const nomeNorm = normalizarNomeColuna(nome);
-                    const encontrado = headersNorm.find(h => h.norm === nomeNorm);
-                    if (encontrado) return encontrado.index;
-                }
-                for (const nome of possiveisNomes) {
-                    const nomeNorm = normalizarNomeColuna(nome);
-                    const encontrado = headersNorm.find(h => h.norm.includes(nomeNorm) || nomeNorm.includes(h.norm));
-                    if (encontrado) return encontrado.index;
-                }
-                return -1;
-            }
-
-            function processarArquivo(arrayBuffer, fileName) {
+            function processarJSON(jsonString) {
                 try {
-                    const extensao = fileName.split('.').pop().toLowerCase();
-                    let workbook;
-                    if (extensao === 'csv') workbook = XLSX.read(arrayBuffer, { type: 'array', raw: true, codepage: 65001 });
-                    else workbook = XLSX.read(arrayBuffer, { type: 'array', raw: true });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: true, blankrows: false });
-                    if (jsonData.length < 2) throw new Error('Planilha vazia ou sem cabeçalhos.');
-
-                    const headers = jsonData[0];
-                    const rows = jsonData.slice(1).filter(r => r.some(c => c !== '' && c !== null && c !== undefined));
-
-                    const idxUnidade = encontrarColuna(headers, ['Unidade', 'UNIDADE', 'unidade']);
-                    const idxNota = encontrarColuna(headers, ['Nota', 'NOTA', 'nota']);
-                    const idxRecebimento = encontrarColuna(headers, ['Recebimento', 'RECEBIMENTO', 'recebimento']);
-                    const idxFornecedor = encontrarColuna(headers, ['Fornecedor', 'FORNECEDOR', 'CNPJ', 'fornecedor']);
-                    const idxNome = encontrarColuna(headers, ['Nome', 'NOME', 'nome']);
-                    const idxVlrImpresso = encontrarColuna(headers, ['Vlr Impresso', 'Vlr Impresso', 'Valor Impresso', 'VLR_IMPRESSO', 'Valor Total']);
-                    const idxQuantidade = encontrarColuna(headers, ['Quantidade', 'QUANTIDADE', 'QTD', 'quantidade', 'qtd']);
-                    const idxEmpresa = encontrarColuna(headers, ['Empresa', 'EMPRESA', 'empresa']);
-                    const idxEstado = encontrarColuna(headers, ['Estado', 'ESTADO', 'estado', 'UF']);
-                    const idxMes = encontrarColuna(headers, ['Mês', 'Mes', 'MES', 'mês']);
-                    const idxAno = encontrarColuna(headers, ['Ano', 'ANO', 'ano']);
-                    const idxCategoria = encontrarColuna(headers, ['Categoria', 'CATEGORIA', 'categoria']);
-                    const idxResponsavel = encontrarColuna(headers, ['Responsável', 'Responsavel', 'RESPONSAVEL', 'Comprador', 'COMPRADOR']);
-                    const idxDescricao = encontrarColuna(headers, ['Descrição', 'Descricao', 'DESCRICAO', 'descrição', 'descricao', 'Item']);
-                    const idxItemReceita = encontrarColuna(headers, ['Item receita', 'Item Receita', 'ITEM_RECEITA', 'item receita']);
-                    const idxQtd = encontrarColuna(headers, ['Qtd', 'QTD_CONVERTIDA', 'qtd', 'Quantidade Convertida']);
-                    const idxCUnt = encontrarColuna(headers, ['C_Unt', 'C_UNT', 'Custo Unitario', 'Custo Unitário', 'c_unt']);
-                    const idxMunicipio = encontrarColuna(headers, ['Municipio', 'Município', 'MUNICIPIO', 'municipio']);
-                    const idxSegmentacao = encontrarColuna(headers, ['Segmentação', 'Segmentacao', 'SEGMENTACAO', 'segmentação']);
-                    const idxTri = encontrarColuna(headers, ['TRI', 'Trimestre', 'TRIMESTRE', 'tri']);
-
-                    if (idxVlrImpresso < 0) throw new Error('Coluna "Vlr Impresso" não encontrada.');
-                    if (idxMes < 0 || idxAno < 0) throw new Error('Colunas de Mês/Ano obrigatórias.');
-
-                    dadosBrutos = [];
-                    let linhasComValorZero = 0;
-                    for (const row of rows) {
-                        const obj = {
-                            unidade: idxUnidade >= 0 ? String(row[idxUnidade] ?? '').trim() : '',
-                            nota: idxNota >= 0 ? String(row[idxNota] ?? '').trim() : '',
-                            recebimento: idxRecebimento >= 0 ? String(row[idxRecebimento] ?? '').trim() : '',
-                            fornecedor: idxFornecedor >= 0 ? String(row[idxFornecedor] ?? '').trim() : '',
-                            nome: idxNome >= 0 ? String(row[idxNome] ?? '').trim() : '',
-                            vlrImpresso: parseNumero(row[idxVlrImpresso]),
-                            quantidade: idxQuantidade >= 0 ? parseNumero(row[idxQuantidade]) : 0,
-                            empresa: idxEmpresa >= 0 ? String(row[idxEmpresa] ?? '').trim() : '',
-                            estado: idxEstado >= 0 ? String(row[idxEstado] ?? '').trim() : '',
-                            mesRaw: String(row[idxMes] ?? '').trim(),
-                            anoRaw: String(row[idxAno] ?? '').trim(),
-                            categoria: idxCategoria >= 0 ? String(row[idxCategoria] ?? '').trim() : '',
-                            responsavel: idxResponsavel >= 0 ? String(row[idxResponsavel] ?? '').trim() : '',
-                            descricao: idxDescricao >= 0 ? String(row[idxDescricao] ?? '').trim() : '',
-                            itemReceita: idxItemReceita >= 0 ? String(row[idxItemReceita] ?? '').trim() : '',
-                            qtd: idxQtd >= 0 ? parseNumero(row[idxQtd]) : 0,
-                            cUnt: idxCUnt >= 0 ? parseNumero(row[idxCUnt]) : 0,
-                            municipio: idxMunicipio >= 0 ? String(row[idxMunicipio] ?? '').trim() : '',
-                            segmentacao: idxSegmentacao >= 0 ? String(row[idxSegmentacao] ?? '').trim() : '',
-                            tri: idxTri >= 0 ? String(row[idxTri] ?? '').trim() : '',
-                        };
+                    const dados = JSON.parse(jsonString);
+                    if (!Array.isArray(dados) || dados.length === 0) throw new Error('JSON vazio ou inválido.');
+                    
+                    dadosBrutos = dados.map(item => ({
+                        unidade: item.Unidade || item.unidade || '',
+                        nota: item.Nota || item.nota || '',
+                        recebimento: item.Recebimento || item.recebimento || '',
+                        fornecedor: item.Fornecedor || item.fornecedor || '',
+                        nome: item.Nome || item.nome || '',
+                        vlrImpresso: parseNumero(item['Vlr Impresso'] || item.vlrImpresso || item['Valor Impresso'] || 0),
+                        quantidade: parseNumero(item.Quantidade || item.quantidade || 0),
+                        empresa: item.Empresa || item.empresa || '',
+                        estado: item.Estado || item.estado || '',
+                        mesRaw: String(item.Mês || item.mes || item['Mês'] || ''),
+                        anoRaw: String(item.Ano || item.ano || ''),
+                        categoria: item.Categoria || item.categoria || '',
+                        responsavel: item.Responsável || item.Responsavel || item.responsavel || '',
+                        descricao: item.Descrição || item.Descricao || item.descrição || item.descricao || '',
+                        itemReceita: item['Item receita'] || item.itemReceita || '',
+                        qtd: parseNumero(item.Qtd || item.qtd || 0),
+                        cUnt: parseNumero(item.C_Unt || item.cUnt || 0),
+                        municipio: item.Municipio || item.Município || item.municipio || '',
+                        segmentacao: item.Segmentação || item.Segmentacao || item.segmentação || item.segmentacao || '',
+                        tri: item.TRI || item.Tri || item.tri || ''
+                    })).map(obj => {
                         obj.mesNum = normalizarMes(obj.mesRaw) || 0;
                         obj.anoNum = parseInt(String(obj.anoRaw).replace(/[^\d]/g, ''), 10) || 0;
                         obj.mesNome = (obj.mesNum >= 1 && obj.mesNum <= 12) ? MESES_NOME[obj.mesNum - 1] : obj.mesRaw;
                         obj.periodoLabel = obj.mesNome + '/' + obj.anoNum;
+                        return obj;
+                    }).filter(obj => obj.vlrImpresso > 0 || obj.quantidade > 0);
 
-                        console.log(`Linha: Vlr Impresso bruto="${row[idxVlrImpresso]}", convertido=${obj.vlrImpresso}`);
-
-                        if (obj.vlrImpresso > 0 || obj.quantidade > 0) {
-                            dadosBrutos.push(obj);
-                        } else {
-                            linhasComValorZero++;
-                        }
-                    }
-
-                    console.log(`Total de linhas processadas: ${rows.length}, válidas: ${dadosBrutos.length}, ignoradas (valor<=0 e qtd<=0): ${linhasComValorZero}`);
-
-                    if (dadosBrutos.length === 0) {
-                        throw new Error('Nenhuma linha com "Vlr Impresso" > 0 ou "Quantidade" > 0. Verifique se a coluna "Vlr Impresso" contém números válidos (use "Texto para Colunas" no Excel para converter).');
-                    }
+                    if (dadosBrutos.length === 0) throw new Error('Nenhum registro com valor > 0 encontrado.');
 
                     const periodosSet = new Map();
                     dadosBrutos.forEach(d => {
@@ -646,6 +581,50 @@
                     console.error(err);
                 }
             }
+
+            function carregarJSON() {
+                const urlJSON = 'dados.json';
+                fetch(urlJSON)
+                    .then(response => {
+                        if (!response.ok) throw new Error('JSON não encontrado.');
+                        return response.text();
+                    })
+                    .then(text => processarJSON(text))
+                    .catch(err => {
+                        console.warn('⚠️ JSON automático não carregado:', err.message);
+                        fileInfo.textContent = 'JSON não encontrado. Faça upload manual.';
+                    });
+            }
+
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                fileInfo.textContent = 'Processando...';
+                const reader = new FileReader();
+                if (file.name.endsWith('.json')) {
+                    reader.onload = evt => processarJSON(evt.target.result);
+                    reader.readAsText(file);
+                } else {
+                    reader.onload = evt => {
+                        const data = new Uint8Array(evt.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.SheetNames[0];
+                        const sheet = workbook.Sheets[firstSheet];
+                        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                        if (jsonData.length < 2) {
+                            fileInfo.textContent = '✗ Planilha vazia.';
+                            fileInfo.className = 'error';
+                            return;
+                        }
+                        const headers = jsonData[0];
+                        const rows = jsonData.slice(1).filter(r => r.some(c => c !== '' && c !== null));
+                        // Processamento antigo (opcional, pode remover se não quiser manter)
+                        fileInfo.textContent = '✗ Use o formato JSON. Converta com o Colab.';
+                        fileInfo.className = 'error';
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+            });
 
             function preencherSelect(selectEl, valores, placeholder) {
                 const current = selectEl.value;
@@ -1071,29 +1050,31 @@
 
             function atualizarDashboard4() { atualizarGraficoFornEstado(); atualizarRankingFornecedoresForn(); }
 
-            function carregarPlanilhaAutomatica() {
-                const urlPlanilha = 'dados.xlsb';
-                fetch(urlPlanilha)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Planilha não encontrada.');
-                        return response.arrayBuffer();
-                    })
-                    .then(arrayBuffer => {
-                        processarArquivo(new Uint8Array(arrayBuffer), urlPlanilha);
-                        console.log('✅ Planilha carregada automaticamente.');
-                    })
-                    .catch(err => {
-                        console.warn('⚠️ Planilha automática não carregada:', err.message);
-                        fileInfo.textContent = 'Planilha não encontrada. Faça upload manual.';
-                    });
-            }
-
             fileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0]; if (!file) return;
+                const file = e.target.files[0];
+                if (!file) return;
                 fileInfo.textContent = 'Processando...';
                 const reader = new FileReader();
-                reader.onload = evt => processarArquivo(new Uint8Array(evt.target.result), file.name);
-                reader.readAsArrayBuffer(file);
+                if (file.name.endsWith('.json')) {
+                    reader.onload = evt => processarJSON(evt.target.result);
+                    reader.readAsText(file);
+                } else {
+                    reader.onload = evt => {
+                        const data = new Uint8Array(evt.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.SheetNames[0];
+                        const sheet = workbook.Sheets[firstSheet];
+                        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                        if (jsonData.length < 2) {
+                            fileInfo.textContent = '✗ Planilha vazia.';
+                            fileInfo.className = 'error';
+                            return;
+                        }
+                        fileInfo.textContent = '✗ Use o formato JSON. Converta com o Colab.';
+                        fileInfo.className = 'error';
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
             });
 
             chkIntervalo.addEventListener('change', function() {
@@ -1166,14 +1147,13 @@
             });
 
             preencherTodosFiltros();
-            carregarPlanilhaAutomatica();
+            carregarJSON();
             atualizarDashboard1(); atualizarDashboard2(); atualizarDashboard3(); atualizarDashboard4();
             mesFimContainer.classList.add('hidden'); mesFimContainerSec.classList.add('hidden');
             mesFimContainerItem.classList.add('hidden'); mesFimContainerForn.classList.add('hidden');
 
-            // Garante que o carregamento automático funcione mesmo após pequenos atrasos
             window.addEventListener('load', () => {
-                if (dadosBrutos.length === 0) carregarPlanilhaAutomatica();
+                if (dadosBrutos.length === 0) carregarJSON();
             });
         })();
     </script>
