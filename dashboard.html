@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LP Compras – Dashboards</title>
 
-    <!-- Bibliotecas CDN -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -31,11 +30,7 @@
             --navy: #0a1929;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
@@ -46,7 +41,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ==================== CABEÇALHO ==================== */
         .app-header {
             background: var(--card-bg);
             border-bottom: 1px solid var(--border);
@@ -59,125 +53,44 @@
             top: 0;
             z-index: 100;
         }
-        .app-header .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .app-header .logo-area { display: flex; align-items: center; gap: 10px; }
         .app-header .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: var(--primary);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 18px;
-            font-weight: 700;
+            width: 36px; height: 36px; background: var(--primary); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; font-weight: 700;
         }
-        .app-header h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text);
-        }
+        .app-header h1 { font-size: 1.25rem; font-weight: 600; color: var(--text); }
         .app-header .badge {
-            font-size: 0.7rem;
-            background: #e8f0fe;
-            color: var(--primary);
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-weight: 500;
+            font-size: 0.7rem; background: #e8f0fe; color: var(--primary);
+            padding: 3px 10px; border-radius: 20px; font-weight: 500;
         }
 
         .tab-nav {
-            display: flex;
-            background: var(--card-bg);
-            border-bottom: 2px solid var(--border);
-            padding: 0 28px;
-            position: sticky;
-            top: 64px;
-            z-index: 99;
-            box-shadow: var(--shadow);
+            display: flex; background: var(--card-bg); border-bottom: 2px solid var(--border);
+            padding: 0 28px; position: sticky; top: 64px; z-index: 99; box-shadow: var(--shadow);
         }
         .tab-btn {
-            padding: 12px 22px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-            transition: var(--transition);
-            white-space: nowrap;
+            padding: 12px 22px; border: none; background: transparent; cursor: pointer;
+            font-size: 0.9rem; font-weight: 500; color: var(--text-secondary);
+            border-bottom: 3px solid transparent; margin-bottom: -2px; transition: var(--transition); white-space: nowrap;
         }
-        .tab-btn:hover {
-            color: var(--text);
-            background: #f8f9fa;
-            border-radius: 6px 6px 0 0;
-        }
-        .tab-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-            font-weight: 600;
-        }
+        .tab-btn:hover { color: var(--text); background: #f8f9fa; border-radius: 6px 6px 0 0; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
 
-        .tab-content {
-            display: none;
-            padding: 20px 28px;
-            animation: fadeIn 0.3s ease;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .tab-content { display: none; padding: 20px 28px; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
         .panel {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 20px 24px;
-            margin-bottom: 18px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
+            background: var(--card-bg); border-radius: var(--radius); padding: 20px 24px;
+            margin-bottom: 18px; box-shadow: var(--shadow); border: 1px solid var(--border);
         }
-        .panel-header {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 14px;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .panel-header .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--primary);
-        }
+        .panel-header { font-weight: 600; font-size: 0.95rem; margin-bottom: 14px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+        .panel-header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
 
-        .upload-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+        .upload-area { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .upload-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 18px;
-            background: var(--primary);
-            color: #fff;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.85rem;
+            display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px;
+            background: var(--primary); color: #fff; border-radius: var(--radius-sm); cursor: pointer; font-weight: 500; font-size: 0.85rem;
         }
         .upload-label:hover { background: var(--primary-dark); }
         .upload-label svg { width: 16px; height: 16px; }
@@ -186,165 +99,64 @@
         #file-info.error { color: #c62828; }
         input[type="file"] { display: none; }
 
-        .filters-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: flex-end;
-        }
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            min-width: 130px;
-            flex: 1;
-            max-width: 200px;
-        }
+        .filters-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+        .filter-group { display: flex; flex-direction: column; gap: 3px; min-width: 130px; flex: 1; max-width: 200px; }
         .filter-group label {
-            font-size: 0.72rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: var(--text-secondary);
+            font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-secondary);
         }
-        .filter-group select,
-        .filter-group input {
-            padding: 8px 10px;
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 0.82rem;
-            background: #fafbfc;
-            color: var(--text);
-            font-family: inherit;
+        .filter-group select, .filter-group input {
+            padding: 8px 10px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+            font-size: 0.82rem; background: #fafbfc; color: var(--text); font-family: inherit;
         }
-        .filter-group select:focus,
-        .filter-group input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
-            background: #fff;
+        .filter-group select:focus, .filter-group input:focus {
+            outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1); background: #fff;
         }
         .interval-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.78rem;
-            font-weight: 500;
-            cursor: pointer;
-            white-space: nowrap;
-            color: var(--text);
-            margin-bottom: 1px;
+            display: flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 500; cursor: pointer;
+            white-space: nowrap; color: var(--text); margin-bottom: 1px;
         }
         .interval-checkbox input { width: 15px; height: 15px; accent-color: var(--primary); }
         .hidden { display: none !important; }
         .btn-reset {
-            padding: 8px 14px;
-            background: #fff;
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            align-self: flex-end;
-            margin-bottom: 1px;
+            padding: 8px 14px; background: #fff; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+            cursor: pointer; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); white-space: nowrap;
+            align-self: flex-end; margin-bottom: 1px;
         }
         .btn-reset:hover { background: #f5f5f5; border-color: #999; color: var(--text); }
 
-        .indicators-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-bottom: 18px;
-        }
+        .indicators-row { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 18px; }
         .indicator-card {
-            flex: 1;
-            min-width: 180px;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 18px 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--primary);
+            flex: 1; min-width: 180px; background: var(--card-bg); border-radius: var(--radius);
+            padding: 18px 20px; box-shadow: var(--shadow); border: 1px solid var(--border); border-left: 4px solid var(--primary);
         }
         .indicator-card:nth-child(1) { border-left-color: var(--primary); }
         .indicator-card:nth-child(2) { border-left-color: var(--accent-green); }
         .indicator-card:nth-child(3) { border-left-color: var(--accent-orange); }
         .indicator-card:nth-child(4) { border-left-color: var(--accent-purple); }
         .indicator-card .ind-label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-secondary);
-            font-weight: 600;
-            margin-bottom: 4px;
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); font-weight: 600; margin-bottom: 4px;
         }
         .indicator-card .ind-value { font-size: 1.5rem; font-weight: 700; color: var(--text); }
 
-        .charts-row {
-            display: flex;
-            gap: 18px;
-            flex-wrap: wrap;
-        }
+        .charts-row { display: flex; gap: 18px; flex-wrap: wrap; }
         .chart-container {
-            flex: 1;
-            min-width: 400px;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 20px 16px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
+            flex: 1; min-width: 400px; background: var(--card-bg); border-radius: var(--radius);
+            padding: 20px 16px; box-shadow: var(--shadow); border: 1px solid var(--border);
         }
-        .chart-container.full-width {
-            flex: 1 1 100%;
-            min-width: 100%;
-        }
-        .chart-container.full-width canvas {
-            max-height: 550px;
-        }
-        .chart-container h3 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 8px;
-            color: var(--text);
-        }
+        .chart-container.full-width { flex: 1 1 100%; min-width: 100%; }
+        .chart-container.full-width canvas { max-height: 550px; }
+        .chart-container h3 { font-size: 0.9rem; font-weight: 600; text-align: center; margin-bottom: 8px; color: var(--text); }
         .chart-container canvas { max-height: 400px; }
         .no-data {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 300px;
-            color: #aaa;
-            font-size: 0.9rem;
-            font-weight: 500;
+            display: flex; align-items: center; justify-content: center; height: 300px; color: #aaa; font-size: 0.9rem; font-weight: 500;
         }
 
-        .table-wrapper {
-            overflow-x: auto;
-            margin-top: 8px;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        .fornecedores-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.82rem;
-        }
+        .table-wrapper { overflow-x: auto; margin-top: 8px; max-height: 600px; overflow-y: auto; }
+        .fornecedores-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
         .fornecedores-table th {
-            background: #f8f9fa;
-            color: var(--text-secondary);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            padding: 10px 12px;
-            border-bottom: 2px solid var(--border);
-            text-align: left;
-            position: sticky;
-            top: 0;
-            background: #f8f9fa;
-            z-index: 1;
+            background: #f8f9fa; color: var(--text-secondary); font-weight: 600; text-transform: uppercase;
+            font-size: 0.7rem; padding: 10px 12px; border-bottom: 2px solid var(--border); text-align: left;
+            position: sticky; top: 0; background: #f8f9fa; z-index: 1;
         }
         .fornecedores-table td { padding: 10px 12px; border-bottom: 1px solid #eee; }
         .fornecedores-table tbody tr:hover { background: #f0f4ff; }
@@ -353,83 +165,31 @@
         .fornecedores-table .negrito td { font-weight: 700; }
         .table-footer-info { font-size: 0.72rem; color: var(--text-secondary); margin-top: 6px; }
 
-        /* Cards de Variação */
-        .cards-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            justify-content: flex-start;
-        }
+        .cards-grid { display: flex; flex-wrap: wrap; gap: 16px; justify-content: flex-start; }
         .comprador-card {
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px 20px;
-            min-width: 220px;
-            flex: 1 1 220px;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            position: relative;
-            cursor: default;
+            background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 16px 20px; min-width: 220px; flex: 1 1 220px; box-shadow: var(--shadow); transition: var(--transition);
+            position: relative; cursor: default;
         }
         .comprador-card:hover { box-shadow: var(--shadow-md); }
         .comprador-card .card-nome {
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-            color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; color: var(--text);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .comprador-card .card-valor,
-        .comprador-card .card-qtd {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-        .comprador-card .card-variacao {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            font-weight: 700;
-        }
+        .comprador-card .card-valor, .comprador-card .card-qtd { font-size: 0.85rem; color: var(--text-secondary); }
+        .comprador-card .card-variacao { margin-top: 10px; font-size: 0.9rem; font-weight: 700; }
         .comprador-card .card-variacao.verde { color: var(--accent-green); }
         .comprador-card .card-variacao.vermelho { color: #c62828; }
         .comprador-card .card-variacao.cinza { color: #6c757d; }
-        .comment-icon {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            font-size: 1rem;
-            color: #888;
-            cursor: help;
-        }
+        .comment-icon { position: absolute; top: 8px; right: 8px; font-size: 1rem; color: #888; cursor: help; }
         .card-tooltip {
-            display: none;
-            position: absolute;
-            background: #333;
-            color: #fff;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            max-width: 280px;
-            width: max-content;
-            bottom: calc(100% + 10px);
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 200;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-            line-height: 1.4;
-            text-align: center;
+            display: none; position: absolute; background: #333; color: #fff; padding: 10px 14px; border-radius: 8px;
+            font-size: 0.8rem; max-width: 280px; width: max-content; bottom: calc(100% + 10px); left: 50%;
+            transform: translateX(-50%); z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,0.25); line-height: 1.4; text-align: center;
         }
         .card-tooltip::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -6px;
-            border-width: 6px;
-            border-style: solid;
-            border-color: #333 transparent transparent transparent;
+            content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px;
+            border-width: 6px; border-style: solid; border-color: #333 transparent transparent transparent;
         }
         .comprador-card:hover .card-tooltip { display: block; }
 
@@ -447,14 +207,9 @@
     </style>
 </head>
 <body>
-
-    <!-- ÁREA DO APLICATIVO (sempre visível) -->
     <div id="app-screen" style="display: block;">
         <header class="app-header">
-            <div class="logo-area">
-                <div class="logo-icon">&#128202;</div>
-                <h1>Dashboard de Compras</h1>
-            </div>
+            <div class="logo-area"><div class="logo-icon">&#128202;</div><h1>Dashboard de Compras</h1></div>
             <span class="badge">v1.0</span>
         </header>
 
@@ -470,12 +225,12 @@
             <div class="panel">
                 <div class="panel-header"><span class="dot"></span> Anexar Planilha de Dados</div>
                 <div class="upload-area">
-                    <label class="upload-label" for="fileInput" title="Formatos aceitos: .xlsx, .xls, .xlsb, .csv">
+                    <label class="upload-label" for="fileInput">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>
                         Selecionar Arquivo
                     </label>
                     <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsb,.csv">
-                    <span id="file-info">Nenhum arquivo selecionado</span>
+                    <span id="file-info">Planilha não carregada. Faça upload ou aguarde.</span>
                 </div>
             </div>
             <div class="panel">
@@ -490,7 +245,7 @@
                     <div class="filter-group" style="max-width:160px; justify-content:flex-end;">
                         <label class="interval-checkbox"><input type="checkbox" id="chk-intervalo"><span>Selecionar intervalo</span></label>
                     </div>
-                    <button class="btn-reset" id="btnResetFiltros" title="Limpar todos os filtros">&#8635; Limpar</button>
+                    <button class="btn-reset" id="btnResetFiltros">&#8635; Limpar</button>
                 </div>
             </div>
             <div class="indicators-row" id="indicatorsRow">
@@ -528,11 +283,10 @@
                     <div class="filter-group" style="max-width:160px; justify-content:flex-end;">
                         <label class="interval-checkbox"><input type="checkbox" id="chk-intervalo-setor"><span>Selecionar intervalo</span></label>
                     </div>
-                    <button class="btn-reset" id="btnResetFiltrosSetor" title="Limpar todos os filtros">&#8635; Limpar</button>
+                    <button class="btn-reset" id="btnResetFiltrosSetor">&#8635; Limpar</button>
                 </div>
             </div>
 
-            <!-- Percentual por Categoria -->
             <div class="charts-row">
                 <div class="chart-container full-width" id="chartCategoriaContainer">
                     <h3>Percentual por Categoria</h3>
@@ -541,7 +295,6 @@
                 </div>
             </div>
 
-            <!-- Variação por Comprador (com tooltip) -->
             <div class="panel">
                 <div class="panel-header"><span class="dot"></span> Variação por Comprador</div>
                 <div class="cards-grid" id="cardsVariacaoContainer"></div>
@@ -567,11 +320,10 @@
                     <div class="filter-group" style="max-width:160px; justify-content:flex-end;">
                         <label class="interval-checkbox"><input type="checkbox" id="chk-intervalo-item"><span>Selecionar intervalo</span></label>
                     </div>
-                    <button class="btn-reset" id="btnResetFiltrosItem" title="Limpar todos os filtros">&#8635; Limpar</button>
+                    <button class="btn-reset" id="btnResetFiltrosItem">&#8635; Limpar</button>
                 </div>
             </div>
 
-            <!-- Gráfico Evolução Mensal Custo x Quantidade -->
             <div class="charts-row">
                 <div class="chart-container full-width" id="chartEvolucaoContainer">
                     <h3>Evolução Mensal Custo x Quantidade</h3>
@@ -580,7 +332,6 @@
                 </div>
             </div>
 
-            <!-- Tabela Curva ABC Itens -->
             <div class="panel">
                 <div class="panel-header"><span class="dot"></span> Curva ABC Itens</div>
                 <div class="table-wrapper">
@@ -619,11 +370,10 @@
                     <div class="filter-group" style="max-width:160px; justify-content:flex-end;">
                         <label class="interval-checkbox"><input type="checkbox" id="chk-intervalo-forn"><span>Selecionar intervalo</span></label>
                     </div>
-                    <button class="btn-reset" id="btnResetFiltrosForn" title="Limpar todos os filtros">&#8635; Limpar</button>
+                    <button class="btn-reset" id="btnResetFiltrosForn">&#8635; Limpar</button>
                 </div>
             </div>
 
-            <!-- Gráfico Quantidade de Fornecedores por Estado -->
             <div class="charts-row">
                 <div class="chart-container full-width" id="chartFornEstadoContainer">
                     <h3>Quantidade de Fornecedores por Estado</h3>
@@ -632,7 +382,6 @@
                 </div>
             </div>
 
-            <!-- Ranking de Fornecedores -->
             <div class="panel">
                 <div class="panel-header"><span class="dot"></span> Ranking de Fornecedores (Valor Comprado)</div>
                 <div class="table-wrapper">
@@ -648,10 +397,8 @@
 
     <script>
         (function() {
-            // ==================== PLUGIN DATALABELS ====================
             if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
 
-            // ==================== VARIÁVEIS GLOBAIS ====================
             let dadosBrutos = [];
             let periodosUnicos = [];
             let chartBarInst = null;
@@ -669,8 +416,6 @@
             };
             const COMPRADORES_IGNORADOS = ['S/COMPRADOR', 'ALBERICO BASTOS', 'ADRIANA ARAPIRACA'];
 
-            // ==================== ELEMENTOS DOM ====================
-            // Aba 1
             const fileInput = document.getElementById('fileInput');
             const fileInfo = document.getElementById('file-info');
             const chkIntervalo = document.getElementById('chk-intervalo');
@@ -693,7 +438,6 @@
             const tbodyFornecedores = document.getElementById('tbodyFornecedores');
             const infoFornecedores = document.getElementById('infoFornecedores');
 
-            // Aba 2
             const selectEstadoSetor = document.getElementById('filtro-estado-setor');
             const selectCategoriaSetor = document.getElementById('filtro-categoria-setor');
             const selectCompradorSetor = document.getElementById('filtro-comprador-setor');
@@ -707,7 +451,6 @@
             const cardsContainer = document.getElementById('cardsVariacaoContainer');
             const noDataVariacaoSetor = document.getElementById('noDataVariacaoSetor');
 
-            // Aba 3 (Item)
             const selectUnidadeItem = document.getElementById('filtro-unidade-item');
             const selectEstadoItem = document.getElementById('filtro-estado-item');
             const selectMunicipioItem = document.getElementById('filtro-municipio-item');
@@ -726,7 +469,6 @@
             const tbodyItens = document.getElementById('tbodyItens');
             const infoItens = document.getElementById('infoItens');
 
-            // Aba 4 (Fornecedor)
             const selectUnidadeForn = document.getElementById('filtro-unidade-forn');
             const selectEstadoForn = document.getElementById('filtro-estado-forn');
             const selectMunicipioForn = document.getElementById('filtro-municipio-forn');
@@ -745,7 +487,6 @@
             const tbodyFornecedoresForn = document.getElementById('tbodyFornecedoresForn');
             const infoFornecedoresForn = document.getElementById('infoFornecedoresForn');
 
-            // ==================== FUNÇÕES UTILITÁRIAS ====================
             function parseNumero(val) {
                 if (typeof val === 'number') return isNaN(val) ? 0 : val;
                 if (val === null || val === undefined || val === '') return 0;
@@ -801,7 +542,6 @@
                 return -1;
             }
 
-            // ==================== LEITURA DA PLANILHA ====================
             function processarArquivo(arrayBuffer, fileName) {
                 try {
                     const extensao = fileName.split('.').pop().toLowerCase();
@@ -894,7 +634,6 @@
                 }
             }
 
-            // ==================== PREENCHIMENTO DE FILTROS ====================
             function preencherSelect(selectEl, valores, placeholder) {
                 const current = selectEl.value;
                 selectEl.innerHTML = '<option value="">' + placeholder + '</option>';
@@ -903,7 +642,6 @@
             }
 
             function preencherTodosFiltros() {
-                // Aba 1
                 preencherSelect(selectUnidade, [...new Set(dadosBrutos.map(d => d.unidade).filter(Boolean))].sort(), 'Todas');
                 preencherSelect(selectEmpresa, [...new Set(dadosBrutos.map(d => d.empresa).filter(Boolean))].sort(), 'Todas');
                 preencherSelect(selectCategoria, [...new Set(dadosBrutos.map(d => d.categoria).filter(Boolean))].sort(), 'Todas');
@@ -916,7 +654,6 @@
                     selectMesFim.value = periodosUnicos[periodosUnicos.length - 1].label;
                 }
 
-                // Aba 2
                 preencherSelect(selectEstadoSetor, [...new Set(dadosBrutos.map(d => d.estado).filter(Boolean))].sort(), 'Todos');
                 preencherSelect(selectCategoriaSetor, [...new Set(dadosBrutos.map(d => d.categoria).filter(Boolean))].sort(), 'Todas');
                 let compradoresSetor = [...new Set(dadosBrutos.map(d => d.responsavel).filter(Boolean))]
@@ -929,7 +666,6 @@
                     selectMesFimSetor.value = periodosUnicos[periodosUnicos.length - 1].label;
                 }
 
-                // Aba 3 (Item)
                 preencherSelect(selectUnidadeItem, [...new Set(dadosBrutos.map(d => d.unidade).filter(Boolean))].sort(), 'Todas');
                 preencherSelect(selectEstadoItem, [...new Set(dadosBrutos.map(d => d.estado).filter(Boolean))].sort(), 'Todos');
                 preencherSelect(selectMunicipioItem, [...new Set(dadosBrutos.map(d => d.municipio).filter(Boolean))].sort(), 'Todos');
@@ -945,7 +681,6 @@
                     selectMesFimItem.value = periodosUnicos[periodosUnicos.length - 1].label;
                 }
 
-                // Aba 4 (Fornecedor)
                 preencherSelect(selectUnidadeForn, [...new Set(dadosBrutos.map(d => d.unidade).filter(Boolean))].sort(), 'Todas');
                 preencherSelect(selectEstadoForn, [...new Set(dadosBrutos.map(d => d.estado).filter(Boolean))].sort(), 'Todos');
                 preencherSelect(selectMunicipioForn, [...new Set(dadosBrutos.map(d => d.municipio).filter(Boolean))].sort(), 'Todos');
@@ -962,7 +697,6 @@
                 }
             }
 
-            // ==================== OBTENÇÃO DE DADOS FILTRADOS ====================
             function getIndicesPeriodo(usarIntervalo, inicioLabel, fimLabel) {
                 let idxInicio = periodosUnicos.findIndex(p => p.label === inicioLabel);
                 let idxFim = usarIntervalo ? periodosUnicos.findIndex(p => p.label === fimLabel) : idxInicio;
@@ -1025,7 +759,6 @@
                 }, chkIntervaloForn.checked, selectMesInicioForn.value, selectMesFimForn.value);
             }
 
-            // ==================== ATUALIZAÇÃO DASHBOARD 1 ====================
             function atualizarDashboard1() {
                 const dados = getDadosFiltrados1();
                 const totalPeriodo = dados.reduce((s, d) => s + d.vlrImpresso, 0);
@@ -1093,7 +826,6 @@
                 }
             }
 
-            // ==================== ATUALIZAÇÃO DASHBOARD 2 (Comprador) ====================
             function atualizarGraficoCategoriaSetor() {
                 const dados = getDadosFiltrados2();
                 if (!dados.length) {
@@ -1176,7 +908,6 @@
 
             function atualizarDashboard2() { atualizarGraficoCategoriaSetor(); atualizarCardsVariacao(); }
 
-            // ==================== ATUALIZAÇÃO DASHBOARD 3 (Item) ====================
             function atualizarGraficoEvolucao() {
                 const dados = getDadosFiltrados3();
                 if (!dados.length) {
@@ -1241,7 +972,6 @@
 
             function atualizarDashboard3() { atualizarGraficoEvolucao(); atualizarTabelaItens(); }
 
-            // ==================== ATUALIZAÇÃO DASHBOARD 4 (Fornecedor) ====================
             function atualizarGraficoFornEstado() {
                 const dados = getDadosFiltrados4();
                 if (!dados.length) {
@@ -1328,9 +1058,8 @@
 
             function atualizarDashboard4() { atualizarGraficoFornEstado(); atualizarRankingFornecedoresForn(); }
 
-            // ==================== CARREGAMENTO AUTOMÁTICO DA PLANILHA ====================
             function carregarPlanilhaAutomatica() {
-                const urlPlanilha = 'dados.xlsx';  // nome do arquivo na mesma pasta
+                const urlPlanilha = 'dados.xlsx';
                 fetch(urlPlanilha)
                     .then(response => {
                         if (!response.ok) throw new Error('Planilha não encontrada.');
@@ -1346,7 +1075,6 @@
                     });
             }
 
-            // ==================== EVENTOS ====================
             fileInput.addEventListener('change', function(e) {
                 const file = e.target.files[0]; if (!file) return;
                 fileInfo.textContent = 'Processando...';
@@ -1355,7 +1083,6 @@
                 reader.readAsArrayBuffer(file);
             });
 
-            // Eventos Aba 1
             chkIntervalo.addEventListener('change', function() {
                 mesFimContainer.classList.toggle('hidden', !this.checked);
                 if (this.checked && !selectMesFim.value && selectMesInicio.value) selectMesFim.value = selectMesInicio.value;
@@ -1369,7 +1096,6 @@
                 atualizarDashboard1();
             });
 
-            // Eventos Aba 2
             chkIntervaloSetor.addEventListener('change', function() {
                 mesFimContainerSec.classList.toggle('hidden', !this.checked);
                 if (this.checked && !selectMesFimSetor.value && selectMesInicioSetor.value) selectMesFimSetor.value = selectMesInicioSetor.value;
@@ -1383,7 +1109,6 @@
                 atualizarDashboard2();
             });
 
-            // Eventos Aba 3 (Item)
             chkIntervaloItem.addEventListener('change', function() {
                 mesFimContainerItem.classList.toggle('hidden', !this.checked);
                 if (this.checked && !selectMesFimItem.value && selectMesInicioItem.value) selectMesFimItem.value = selectMesInicioItem.value;
@@ -1398,7 +1123,6 @@
                 atualizarDashboard3();
             });
 
-            // Eventos Aba 4 (Fornecedor)
             chkIntervaloForn.addEventListener('change', function() {
                 mesFimContainerForn.classList.toggle('hidden', !this.checked);
                 if (this.checked && !selectMesFimForn.value && selectMesInicioForn.value) selectMesFimForn.value = selectMesInicioForn.value;
@@ -1428,9 +1152,8 @@
                 });
             });
 
-            // ==================== INICIALIZAÇÃO ====================
             preencherTodosFiltros();
-            carregarPlanilhaAutomatica();  // Tenta carregar a planilha automaticamente
+            carregarPlanilhaAutomatica();
             atualizarDashboard1(); atualizarDashboard2(); atualizarDashboard3(); atualizarDashboard4();
             mesFimContainer.classList.add('hidden'); mesFimContainerSec.classList.add('hidden');
             mesFimContainerItem.classList.add('hidden'); mesFimContainerForn.classList.add('hidden');
