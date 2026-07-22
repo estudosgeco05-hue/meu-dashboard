@@ -550,7 +550,7 @@
                     else workbook = XLSX.read(arrayBuffer, { type: 'array', raw: true });
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: true, blankrows: false });
-                    if (jsonData.length < 2) throw new Error('Planilha vazia.');
+                    if (jsonData.length < 2) throw new Error('Planilha vazia ou sem cabeçalhos.');
 
                     const headers = jsonData[0];
                     const rows = jsonData.slice(1).filter(r => r.some(c => c !== '' && c !== null && c !== undefined));
@@ -580,6 +580,7 @@
                     if (idxMes < 0 || idxAno < 0) throw new Error('Colunas de Mês/Ano obrigatórias.');
 
                     dadosBrutos = [];
+                    let linhasComValorZero = 0;
                     for (const row of rows) {
                         const obj = {
                             unidade: idxUnidade >= 0 ? String(row[idxUnidade] ?? '').trim() : '',
@@ -607,10 +608,21 @@
                         obj.anoNum = parseInt(String(obj.anoRaw).replace(/[^\d]/g, ''), 10) || 0;
                         obj.mesNome = (obj.mesNum >= 1 && obj.mesNum <= 12) ? MESES_NOME[obj.mesNum - 1] : obj.mesRaw;
                         obj.periodoLabel = obj.mesNome + '/' + obj.anoNum;
-                        if (obj.vlrImpresso > 0) dadosBrutos.push(obj);
+
+                        console.log(`Linha: Vlr Impresso bruto="${row[idxVlrImpresso]}", convertido=${obj.vlrImpresso}`);
+
+                        if (obj.vlrImpresso > 0 || obj.quantidade > 0) {
+                            dadosBrutos.push(obj);
+                        } else {
+                            linhasComValorZero++;
+                        }
                     }
 
-                    if (dadosBrutos.length === 0) throw new Error('Nenhum dado válido.');
+                    console.log(`Total de linhas processadas: ${rows.length}, válidas: ${dadosBrutos.length}, ignoradas (valor<=0 e qtd<=0): ${linhasComValorZero}`);
+
+                    if (dadosBrutos.length === 0) {
+                        throw new Error('Nenhuma linha com "Vlr Impresso" > 0 ou "Quantidade" > 0. Verifique se a coluna "Vlr Impresso" contém números válidos (use "Texto para Colunas" no Excel para converter).');
+                    }
 
                     const periodosSet = new Map();
                     dadosBrutos.forEach(d => {
@@ -631,6 +643,7 @@
                 } catch (err) {
                     fileInfo.textContent = '✗ Erro: ' + err.message;
                     fileInfo.className = 'error';
+                    console.error(err);
                 }
             }
 
@@ -1059,7 +1072,7 @@
             function atualizarDashboard4() { atualizarGraficoFornEstado(); atualizarRankingFornecedoresForn(); }
 
             function carregarPlanilhaAutomatica() {
-                const urlPlanilha = 'dados.xlsx';
+                const urlPlanilha = 'dados.xlsb';
                 fetch(urlPlanilha)
                     .then(response => {
                         if (!response.ok) throw new Error('Planilha não encontrada.');
@@ -1157,6 +1170,11 @@
             atualizarDashboard1(); atualizarDashboard2(); atualizarDashboard3(); atualizarDashboard4();
             mesFimContainer.classList.add('hidden'); mesFimContainerSec.classList.add('hidden');
             mesFimContainerItem.classList.add('hidden'); mesFimContainerForn.classList.add('hidden');
+
+            // Garante que o carregamento automático funcione mesmo após pequenos atrasos
+            window.addEventListener('load', () => {
+                if (dadosBrutos.length === 0) carregarPlanilhaAutomatica();
+            });
         })();
     </script>
 </body>
